@@ -1,0 +1,43 @@
+.app {
+  display: grid;
+  place-content: center;
+  height: 100%;
+}
+
+@mixin tile{
+  display: flex;
+  width: 10vh;
+  height: 10vh;
+}
+
+@mixin piece-image{
+  img{
+    margin: auto;
+    width: 9vh;
+    height: 9vh;
+  }
+}
+
+.chessboard {
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(8, 10vh);
+  grid-template-rows: repeat(8, 10vh);
+  width: 80vh;
+  height: 80vh;
+
+  #black {
+    background-color: rgb(112,102,119);
+    color: white;
+    @include tile();
+    @include piece-image();
+  }
+
+  #white {
+    background-color: rgb(204,183,174);
+    color: black;
+    @include tile();
+    @include piece-image();
+  }
+
+}
