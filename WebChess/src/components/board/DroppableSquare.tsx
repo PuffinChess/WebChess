@@ -3,10 +3,12 @@ import { useDrop } from 'react-dnd';
 import { Piece } from '../pieces/Piece';
 import { ChessTileProps } from './Square';
 
-const ChessTile: React.FC<ChessTileProps> = ({ position, color, onDrop }) => {
+const ChessTile: React.FC<ChessTileProps> = ({ position, color, onDrop, children }) => {
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
         accept: 'PIECE',
         drop: (item: Piece, monitor) => {
+            console.log('Dropped item:', item); // Debugging line
+            console.log('Current position:', position); // Debugging line
             onDrop(item.position, position);
         },
         collect: (monitor) => ({
@@ -15,13 +17,14 @@ const ChessTile: React.FC<ChessTileProps> = ({ position, color, onDrop }) => {
         }),
     }));
 
+
     const tileStyle = {
         backgroundColor: isOver ? 'lightgreen' : '',
     };
 
     return (
         <div ref={drop} id={color} style={tileStyle}>
-            {/* Render the chess piece if there is one on this tile */}
+            {children}
         </div>
     );
 };
