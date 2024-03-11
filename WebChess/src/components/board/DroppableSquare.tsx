@@ -7,8 +7,6 @@ const ChessTile: React.FC<ChessTileProps> = ({ position, color, onDrop, children
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
         accept: 'PIECE',
         drop: (item: Piece, monitor) => {
-            console.log('Dropped item:', item); // Debugging line
-            console.log('Current position:', position); // Debugging line
             onDrop(item.position, position);
         },
         collect: (monitor) => ({

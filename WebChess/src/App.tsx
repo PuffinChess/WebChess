@@ -19,7 +19,8 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Landingpage />} />
-            <Route path="/chessboard" element={<ChessBoard onDrop={onDrop} />} />
+            <Route path="/chessboard/" element={<ChessBoard />} />
+            <Route path="/chessboard/:fen" element={<ChessBoard />} />
           </Routes>
         </Router>
       </DndProvider>
