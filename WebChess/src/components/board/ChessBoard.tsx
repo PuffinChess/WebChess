@@ -47,24 +47,6 @@ const ChessBoard: React.FC = () => {
 
     }, []);
 
-
-    function assignPiecesFEN(fen: string) {
-        const fenBoardSplit = fen.split(' ')[0];
-        const fenBoard = fenBoardSplit.replace(/\//g, "");
-        const pieces: any = [];
-
-        let emptyCounter = 0;
-        for (let i = 0; i < fenBoard.length; i++) {
-            if (!isNaN(Number(fenBoard[i]))) {
-                emptyCounter = emptyCounter + (Number(fenBoard[i]) - 1);
-            }
-            else {
-
-            }
-        }
-        return pieces;
-    }
-
     // function convertToChessPosition(position: Position): string {
     //     const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     //     const x = position.x;
@@ -76,13 +58,26 @@ const ChessBoard: React.FC = () => {
     // }
 
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
-        setPieces((prevPieces) => prevPieces.map((piece) => {
-            // Check for the piece to be moved and directly update its position
-            if (piece.position.x === fromPosition.x && piece.position.y === fromPosition.y) {
-                piece.position = toPosition; // Modify the position directly
+        setPieces((prevPieces) => {
+
+            const pieceAtToPosition = prevPieces.find(piece =>
+                piece.position.x === toPosition.x && piece.position.y === toPosition.y
+            );
+
+            if (pieceAtToPosition) {
+
+                
+                return prevPieces;
             }
-            return piece;
-        }));
+
+            return prevPieces.map((piece) => {
+                if (piece.position.x === fromPosition.x && piece.position.y === fromPosition.y) {
+                    // Modify the position directly
+                    piece.position = toPosition;
+                }
+                return piece;
+            });
+        });
     };
 
     const renderTile = (position: Position, postionName: string, color: 'white' | 'black') => {
