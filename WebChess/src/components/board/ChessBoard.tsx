@@ -57,22 +57,35 @@ const ChessBoard: React.FC = () => {
     //     return `${letter}${number}`;
     // }
 
+    function isLowerCase(letter: string): boolean{
+        if (letter === letter.toLowerCase()){
+            return true;
+        }
+        return false;
+    }
+
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
         setPieces((prevPieces) => {
 
-            const pieceAtToPosition = prevPieces.find(piece =>
+            const pieceAtPosition = prevPieces.find(piece =>
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y
             );
 
-            if (pieceAtToPosition) {
+            const pieceFromPosition = prevPieces.find(piece =>
+                piece.position.x === fromPosition.x && piece.position.y === fromPosition.y
+            );
 
-                
-                return prevPieces;
+            if (pieceAtPosition && pieceFromPosition) {
+                if (isLowerCase(pieceAtPosition.type) !== isLowerCase(pieceFromPosition.type)){
+                    prevPieces = prevPieces.filter(obj => obj.position !== pieceAtPosition.position);
+                }
+                else {
+                    return prevPieces;
+                }
             }
 
             return prevPieces.map((piece) => {
                 if (piece.position.x === fromPosition.x && piece.position.y === fromPosition.y) {
-                    // Modify the position directly
                     piece.position = toPosition;
                 }
                 return piece;
