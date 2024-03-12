@@ -7,6 +7,7 @@ import { PieceType } from '../pieces/PieceType';
 import { Piece } from '../pieces/Piece';
 import { useParams } from 'react-router-dom';
 import { getPieceType } from '../pieces/GetPieceType';
+import { isPieceMovementLegal } from '../rules/Movement';
 
 const ChessBoard: React.FC = () => {
 
@@ -64,68 +65,6 @@ const ChessBoard: React.FC = () => {
         return false;
     }
 
-    function isLegalRookMovement(fromPosition: Position, toPosition: Position, prevPieces: Piece[]): boolean {
-        const movementX = Math.abs(fromPosition.x - toPosition.x);
-        const movementY = Math.abs(fromPosition.y - toPosition.y);
-        
-        if (0 === movementX || 0 === movementY) {
-            return true;
-        } else {
-            return false
-        }
-
-    }
-
-    function isLegalBishopMovement(fromPosition: Position, toPosition: Position, prevPieces: Piece[]): boolean {
-        const movementX = Math.abs(fromPosition.x - toPosition.x);
-        const movementY = Math.abs(fromPosition.y - toPosition.y);
-
-        if (movementX === movementY) {
-            return true;
-        }
-        return false;
-    }
-
-    function isLegalKnightMovement(fromPosition: Position, toPosition: Position, prevPieces: Piece[]): boolean {
-        const movementX = Math.abs(fromPosition.x - toPosition.x);
-        const movementY = Math.abs(fromPosition.y - toPosition.y);
-
-        if ((movementX === 2 && movementY === 1) || (movementX === 1 && movementY === 2)) {
-            return true;
-        }
-        return false;
-    }
-
-    function isLegalQueenMovement(fromPosition: Position, toPosition: Position, prevPieces: Piece[]): boolean {
-        const movementX = Math.abs(fromPosition.x - toPosition.x);
-        const movementY = Math.abs(fromPosition.y - toPosition.y);
-
-        if ((0 === movementX || 0 === movementY) || (movementX === movementY)) {
-            return true;
-        }
-        return false;
-    }
-
-    function isLegalKingMovement(fromPosition: Position, toPosition: Position, prevPieces: Piece[]): boolean {
-        const movementX = Math.abs(fromPosition.x - toPosition.x);
-        const movementY = Math.abs(fromPosition.y - toPosition.y);
-
-        if (movementX <= 1 && movementY <= 1) {
-            return true;
-        }
-        return false;
-    }
-
-    function isLegalPawnMovement(fromPosition: Position, toPosition: Position, prevPieces: Piece[]): boolean {
-        const movementX = Math.abs(fromPosition.x - toPosition.x);
-        const movementY = Math.abs(fromPosition.y - toPosition.y);
-
-        if (movementX === 0) {
-            return true;
-        }
-        return false;
-    }
-
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
         setPieces((prevPieces) => {
 
@@ -142,81 +81,10 @@ const ChessBoard: React.FC = () => {
             }
 
 
-
-            switch (pieceFromPosition.type){
-                case PieceType.RookBlack: {
-                    if (!isLegalRookMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.RookBlack: {
-                    if (!isLegalRookMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.BishopBlack: {
-                    if (!isLegalBishopMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.BishopWhite: {
-                    if (!isLegalBishopMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.KnightBlack: {
-                    if (!isLegalKnightMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.KnightWhite: {
-                    if (!isLegalKnightMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.QueenWhite: {
-                    if (!isLegalQueenMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.QueenBlack: {
-                    if (!isLegalQueenMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.KingBlack: {
-                    if (!isLegalKingMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.KingWhite: {
-                    if (!isLegalKingMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.PawnBlack: {
-                    if (!isLegalPawnMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
-                case PieceType.PawnWhite: {
-                    if (!isLegalPawnMovement(fromPosition, toPosition, prevPieces)) {
-                        return prevPieces;
-                    }
-                    break;
-                }
+            if (!isPieceMovementLegal(pieceFromPosition, fromPosition, toPosition, prevPieces)) {
+                return prevPieces;
             }
+
             //Check is piece movement legal
             //For bishops, rooks, queen => validate there is no pieces in the way along path of movement
             //For pawn, allow captures diagonally not forwards. 2 tile move as first move allowed of piece
