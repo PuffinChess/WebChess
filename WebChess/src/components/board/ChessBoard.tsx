@@ -8,6 +8,7 @@ import { Piece } from '../pieces/Piece';
 import { useParams } from 'react-router-dom';
 import { getPieceType } from '../pieces/GetPieceType';
 import { isPieceMovementLegal } from '../rules/Movement';
+import { InCheck } from '../rules/InCheck';
 
 const ChessBoard: React.FC = () => {
 
@@ -82,6 +83,10 @@ const ChessBoard: React.FC = () => {
 
 
             if (!isPieceMovementLegal(pieceFromPosition, fromPosition, toPosition, prevPieces)) {
+                return prevPieces;
+            }
+
+            if (InCheck(pieceFromPosition.type, prevPieces)) {
                 return prevPieces;
             }
 

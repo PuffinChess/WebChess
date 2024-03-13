@@ -5,6 +5,8 @@ export function isLegalKingMovement(fromPosition: Position, toPosition: Position
     const movementX = Math.abs(fromPosition.x - toPosition.x);
     const movementY = Math.abs(fromPosition.y - toPosition.y);
 
+    //Check the king is not moving into check.
+
     if (movementX <= 1 && movementY <= 1) {
         return true;
     }
