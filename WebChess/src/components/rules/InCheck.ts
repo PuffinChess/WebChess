@@ -3,6 +3,8 @@ import { PieceType } from "../pieces/PieceType";
 
 export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
 
+    console.log(piece)
+
     //check colour of piece moved
     if (piece.toUpperCase() === piece) {
         //White move

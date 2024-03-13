@@ -9,6 +9,7 @@ import { useParams } from 'react-router-dom';
 import { getPieceType } from '../pieces/GetPieceType';
 import { isPieceMovementLegal } from '../rules/Movement';
 import { InCheck } from '../rules/InCheck';
+import { isLowerCase } from '../utils/IsLowerCase';
 
 const ChessBoard: React.FC = () => {
 
@@ -45,8 +46,6 @@ const ChessBoard: React.FC = () => {
             }
         }
         setPieces(pieces);
-        console.log(pieces);
-
     }, []);
 
     // function convertToChessPosition(position: Position): string {
@@ -59,15 +58,12 @@ const ChessBoard: React.FC = () => {
     //     return `${letter}${number}`;
     // }
 
-    function isLowerCase(letter: string): boolean{
-        if (letter === letter.toLowerCase()){
-            return true;
-        }
-        return false;
-    }
-
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
         setPieces((prevPieces) => {
+
+            if (fromPosition.x === toPosition.x && fromPosition.y === toPosition.y ) {
+                return prevPieces;
+            }
 
             const pieceAtPosition = prevPieces.find(piece =>
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y
@@ -81,40 +77,32 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-
             if (!isPieceMovementLegal(pieceFromPosition, fromPosition, toPosition, prevPieces)) {
                 return prevPieces;
             }
 
-            if (InCheck(pieceFromPosition.type, prevPieces)) {
-                return prevPieces;
-            }
-
-            //Check is piece movement legal
-            //For bishops, rooks, queen => validate there is no pieces in the way along path of movement
-            //For pawn, allow captures diagonally not forwards. 2 tile move as first move allowed of piece
-            //
-
-
-
-            //Checks if there is a piece at the location.
-            if (pieceAtPosition && pieceFromPosition) {
-                //If pieces of same colour return board without changes, else remove piece to be captured.
-                if (isLowerCase(pieceAtPosition.type) !== isLowerCase(pieceFromPosition.type)){
-                    prevPieces = prevPieces.filter(obj => obj.position !== pieceAtPosition.position);
+            // Create a new array with updated positions
+            let updatedPieces = prevPieces.map(piece => {
+                if (piece.position.x === fromPosition.x && piece.position.y === fromPosition.y) {
+                    return { ...piece, position: { ...toPosition } }; // Create a new object with updated position
                 }
-                else {
+                return piece;
+            });
+
+            // Checks if there is a piece at the location and filter it out if captured
+            if (pieceAtPosition && pieceFromPosition) {
+                if (isLowerCase(pieceAtPosition.type) !== isLowerCase(pieceFromPosition.type)) {
+                    updatedPieces = updatedPieces.filter(obj => obj.position !== pieceAtPosition.position);
+                } else {
                     return prevPieces;
                 }
             }
 
-            //Update piece location and return new board state
-            return prevPieces.map((piece) => {
-                if (piece.position.x === fromPosition.x && piece.position.y === fromPosition.y) {
-                    piece.position = toPosition;
-                }
-                return piece;
-            });
+            if (!(pieceFromPosition.type === PieceType.KingBlack || pieceFromPosition.type === PieceType.KingWhite) && InCheck(pieceFromPosition.type, updatedPieces)) {
+                return prevPieces;
+            }
+
+            return updatedPieces;
         });
     };
 
