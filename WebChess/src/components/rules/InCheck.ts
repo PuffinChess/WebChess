@@ -27,8 +27,96 @@ export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
         }
 
         //Check Diagonal attack (Queen, Bishop)
-        //Check Line attack (Queen, Rook)
+        for (let dx = -1; dx <= 1; dx += 2) { // Iterate over diagonals
+            for (let dy = -1; dy <= 1; dy += 2) { // Iterate over diagonals
+                let x = kingWhite.position.x + dx;
+                let y = kingWhite.position.y + dy;
+
+                // Keep going along the diagonal until you reach the edge of the board or another piece
+                while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                    const pieceOnDiagonal = prevPieces.find(piece =>
+                        piece.position.x === x && piece.position.y === y);
+
+                    if (pieceOnDiagonal) {
+                        // If a piece is found on the diagonal, check if it's a black queen or black bishop
+                        if (pieceOnDiagonal.type === PieceType.QueenBlack ||
+                            pieceOnDiagonal.type === PieceType.BishopBlack) {
+                            return true; // Found a diagonal attack by black queen or black bishop
+                        }
+                        break; // Stop search other piece found
+                    }
+
+                    // Move to the next square along the diagonal
+                    x += dx;
+                    y += dy;
+                }
+            }
+        }
+
+        // Check Horizontal and Vertical attack (Queen, Rook)
+        for (let dy = -1; dy <= 1; dy += 2) { // Iterate over Y
+            let x = kingWhite.position.x;
+            let y = kingWhite.position.y + dy;
+
+            while (y >= 0 && y < 8) {
+                const pieceOnStraight = prevPieces.find(piece =>
+                    piece.position.x === x && piece.position.y === y);
+
+                if (pieceOnStraight) {
+                    if (pieceOnStraight.type === PieceType.QueenBlack ||
+                        pieceOnStraight.type === PieceType.RookBlack) {
+                        return true;
+                    }
+                    break; //Stop search other piece found on line
+                }
+
+                // Move to the next square along the straight
+                y += dy;
+            }
+        }
+
+        for (let dx = -1; dx <= 1; dx += 2) { // Iterate over Y
+            let x = kingWhite.position.x + dx;
+            let y = kingWhite.position.y;
+
+            while (x >= 0 && x < 8) {
+                const pieceOnStraight = prevPieces.find(piece =>
+                    piece.position.x === x && piece.position.y === y);
+
+                if (pieceOnStraight) {
+                    if (pieceOnStraight.type === PieceType.QueenBlack ||
+                        pieceOnStraight.type === PieceType.RookBlack) {
+                        return true;
+                    }
+                    break; //Stop search other piece found on line
+                }
+
+                // Move to the next square along the straight
+                x += dx;
+            }
+        }
+
         //Check Knight Attack
+        for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -2; dy <= 2; dy++) {
+                if (Math.abs(dx * dy) === 2) { // Check if the move is L-shaped
+                    const x = kingWhite.position.x + dx;
+                    const y = kingWhite.position.y + dy;
+
+                    const pieceKnightPosition = prevPieces.find(piece =>
+                        piece.position.x === x && piece.position.y === y);
+
+                    if (pieceKnightPosition) {
+                        if (pieceKnightPosition.type === PieceType.KnightBlack)
+                             {
+                            return true;
+                        }
+                        break; //Stop search other piece found on line
+                    }
+                }
+            }
+        }
+
         //Check move does not put king inside of king range
     }
     else if (piece.toLowerCase() === piece) {
