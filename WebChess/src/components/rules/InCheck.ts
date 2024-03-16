@@ -117,6 +117,23 @@ export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
         }
 
         //Check move does not put king inside of king range
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const x = kingWhite.position.x + dx;
+                const y = kingWhite.position.y + dy;
+
+                const pieceKingPosition = prevPieces.find(piece =>
+                    piece.position.x === x && piece.position.y === y);
+
+                console.log(x, y, pieceKingPosition);
+
+                if (pieceKingPosition) {
+                    if (pieceKingPosition.type === PieceType.KingBlack) {
+                        return true;
+                    }
+                }
+            }
+        }
     }
     else if (piece.toLowerCase() === piece) {
         //Black move
@@ -249,14 +266,6 @@ export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
         }
 
     }
-
-    //Check pawn attack
-
-
-    //Check Diagonal attack (Queen, Bishop)
-    //Check Line attack (Queen, Rook)
-    //Check Knight Attack
-    //Check move does not put king inside of king range
 
     return false;
 } 
