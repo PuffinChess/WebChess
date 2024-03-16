@@ -3,8 +3,6 @@ import { PieceType } from "../pieces/PieceType";
 
 export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
 
-    console.log(piece)
-
     //check colour of piece moved
     if (piece.toUpperCase() === piece) {
         //White move
@@ -223,7 +221,6 @@ export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
                             piece.position.x === x && piece.position.y === y);
 
                         if (pieceKnightPosition) {
-                            console.log(pieceKnightPosition)
                             if (pieceKnightPosition.type === PieceType.KnightWhite) {
                                 return true;
                             }
@@ -233,11 +230,24 @@ export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
             }
         }
 
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const x = kingBlack.position.x + dx;
+                const y = kingBlack.position.y + dy;
 
+                const pieceKingPosition = prevPieces.find(piece =>
+                    piece.position.x === x && piece.position.y === y);
+                
+                console.log (x, y, pieceKingPosition);
 
-    }
-    else {
-        return false;
+                if (pieceKingPosition) {
+                    if(pieceKingPosition.type === PieceType.KingWhite) {
+                        return true;
+                    }
+                }
+            }
+        }
+
     }
 
     //Check pawn attack
