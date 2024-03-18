@@ -14,6 +14,12 @@ import { isLowerCase } from '../utils/IsLowerCase';
 const ChessBoard: React.FC = () => {
 
     const [pieces, setPieces] = useState<Piece[]>([]);
+    const [castlingRights, setCastlingRights] = useState({
+        whiteShort: true,
+        whiteLong: true,
+        blackShort: true,
+        blackLong: true
+    });
     const params = useParams();
 
     useEffect(() => {
@@ -48,6 +54,11 @@ const ChessBoard: React.FC = () => {
         setPieces(pieces);
     }, []);
 
+    function castlingCheck(pieceFromPosition: Piece, toPosition: Position) {
+        //Castling check
+
+    }
+
     // function convertToChessPosition(position: Position): string {
     //     const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     //     const x = position.x;
@@ -61,7 +72,7 @@ const ChessBoard: React.FC = () => {
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
         setPieces((prevPieces) => {
 
-            if (fromPosition.x === toPosition.x && fromPosition.y === toPosition.y ) {
+            if (fromPosition.x === toPosition.x && fromPosition.y === toPosition.y) {
                 return prevPieces;
             }
 
@@ -73,8 +84,28 @@ const ChessBoard: React.FC = () => {
                 piece.position.x === fromPosition.x && piece.position.y === fromPosition.y
             );
 
+
             if (!pieceFromPosition) {
                 return prevPieces;
+            }
+
+            if (Object.values(castlingRights).some(val => val === true)){
+                if (castlingRights.whiteShort && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 6)) {
+                    //check if pieces in the way
+
+                }
+                else if (castlingRights.blackShort && pieceFromPosition.type == PieceType.KingBlack && (toPosition.y === 0 && toPosition.x === 6)) {
+                    //check if pieces in the way
+                    //perform moves
+                }
+                else if (castlingRights.whiteLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
+                    //check if pieces in the way
+                    //perform moves
+                }
+                else if (castlingRights.blackLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
+                    //check if pieces in the way
+                    //perform moves
+                }
             }
 
             if (!isPieceMovementLegal(pieceFromPosition, fromPosition, toPosition, prevPieces)) {

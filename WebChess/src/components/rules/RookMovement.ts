@@ -27,12 +27,4 @@ export function isLegalRookMovement(fromPosition: Position, toPosition: Position
         return true;
     }
     return false;
-
-
-    if (0 === movementX || 0 === movementY) {
-        return true;
-    } else {
-        return false
-    }
-
 }
