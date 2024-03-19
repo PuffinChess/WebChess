@@ -14,6 +14,7 @@ import { isLowerCase } from '../utils/IsLowerCase';
 const ChessBoard: React.FC = () => {
 
     const [pieces, setPieces] = useState<Piece[]>([]);
+    const [isWhiteTurn, setWhiteTurn] = useState(true);
     const [castlingRights, setCastlingRights] = useState({
         whiteShort: true,
         whiteLong: true,
@@ -54,11 +55,6 @@ const ChessBoard: React.FC = () => {
         setPieces(pieces);
     }, []);
 
-    function castlingCheck(pieceFromPosition: Piece, toPosition: Position) {
-        //Castling check
-
-    }
-
     // function convertToChessPosition(position: Position): string {
     //     const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     //     const x = position.x;
@@ -69,6 +65,50 @@ const ChessBoard: React.FC = () => {
     //     return `${letter}${number}`;
     // }
 
+
+    //check
+    // if (Object.values(castlingRights).some(val => val === true)) {
+    //     if (castlingRights.whiteShort && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 6)) {
+    //         //check if pieces in the way
+    //         const piece = prevPieces.find(piece =>
+    //             piece.position.x === 6 && piece.position.y === 7)
+    //         if (piece) {
+    //             return prevPieces;
+    //         }
+    //         else {
+    //             return
+    //         }
+    //     }
+    //     else if (castlingRights.blackShort && pieceFromPosition.type == PieceType.KingBlack && (toPosition.y === 0 && toPosition.x === 6)) {
+    //         //check if pieces in the way
+    //         const piece = prevPieces.find(piece =>
+    //             piece.position.x === 6 && piece.position.y === 7)
+    //         if (piece) {
+    //             return prevPieces;
+    //         }
+    //     }
+    //     else if (castlingRights.whiteLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
+    //         //check if pieces in the way
+    //         //perform moves
+    //     }
+    //     else if (castlingRights.blackLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
+    //         //check if pieces in the way
+    //         //perform moves
+    //     }
+    // }
+
+    function isTurn(pieceFromPosition: Piece): boolean {
+
+        if (pieceFromPosition.type.toUpperCase() === pieceFromPosition.type && isWhiteTurn) {
+            return true
+        }
+        else if (pieceFromPosition.type.toLowerCase() === pieceFromPosition.type && !isWhiteTurn){
+            return true
+        }
+
+        return false;
+    }
+
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
         setPieces((prevPieces) => {
 
@@ -76,37 +116,18 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-            const pieceAtPosition = prevPieces.find(piece =>
-                piece.position.x === toPosition.x && piece.position.y === toPosition.y
-            );
-
             const pieceFromPosition = prevPieces.find(piece =>
                 piece.position.x === fromPosition.x && piece.position.y === fromPosition.y
             );
 
+            const pieceAtPosition = prevPieces.find(piece =>
+                piece.position.x === toPosition.x && piece.position.y === toPosition.y
+            );
 
-            if (!pieceFromPosition) {
+            if (!pieceFromPosition || !isTurn(pieceFromPosition)) {
                 return prevPieces;
             }
 
-            if (Object.values(castlingRights).some(val => val === true)){
-                if (castlingRights.whiteShort && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 6)) {
-                    //check if pieces in the way
-
-                }
-                else if (castlingRights.blackShort && pieceFromPosition.type == PieceType.KingBlack && (toPosition.y === 0 && toPosition.x === 6)) {
-                    //check if pieces in the way
-                    //perform moves
-                }
-                else if (castlingRights.whiteLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
-                    //check if pieces in the way
-                    //perform moves
-                }
-                else if (castlingRights.blackLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
-                    //check if pieces in the way
-                    //perform moves
-                }
-            }
 
             if (!isPieceMovementLegal(pieceFromPosition, fromPosition, toPosition, prevPieces)) {
                 return prevPieces;
@@ -132,6 +153,8 @@ const ChessBoard: React.FC = () => {
             if (!(pieceFromPosition.type === PieceType.KingBlack || pieceFromPosition.type === PieceType.KingWhite) && InCheck(pieceFromPosition.type, updatedPieces)) {
                 return prevPieces;
             }
+
+            setWhiteTurn((isWhiteTurn) => !isWhiteTurn)
 
             return updatedPieces;
         });

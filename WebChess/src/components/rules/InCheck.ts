@@ -125,8 +125,6 @@ export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
                 const pieceKingPosition = prevPieces.find(piece =>
                     piece.position.x === x && piece.position.y === y);
 
-                console.log(x, y, pieceKingPosition);
-
                 if (pieceKingPosition) {
                     if (pieceKingPosition.type === PieceType.KingBlack) {
                         return true;
@@ -254,8 +252,6 @@ export function InCheck(piece: PieceType, prevPieces: Piece[]): boolean {
 
                 const pieceKingPosition = prevPieces.find(piece =>
                     piece.position.x === x && piece.position.y === y);
-                
-                console.log (x, y, pieceKingPosition);
 
                 if (pieceKingPosition) {
                     if(pieceKingPosition.type === PieceType.KingWhite) {
