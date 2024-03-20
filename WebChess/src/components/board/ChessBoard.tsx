@@ -10,11 +10,12 @@ import { getPieceType } from '../pieces/GetPieceType';
 import { isPieceMovementLegal } from '../rules/Movement';
 import { InCheck } from '../rules/InCheck';
 import { isLowerCase } from '../utils/IsLowerCase';
+import { isTurn } from '../rules/IsTurn';
 
 const ChessBoard: React.FC = () => {
 
     const [pieces, setPieces] = useState<Piece[]>([]);
-    const [isWhiteTurn, setWhiteTurn] = useState(true);
+    const [isWhiteTurn, setWhiteTurn] = useState<boolean>(true);
     const [castlingRights, setCastlingRights] = useState({
         whiteShort: true,
         whiteLong: true,
@@ -66,7 +67,7 @@ const ChessBoard: React.FC = () => {
     // }
 
 
-    //check
+    //castling check
     // if (Object.values(castlingRights).some(val => val === true)) {
     //     if (castlingRights.whiteShort && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 6)) {
     //         //check if pieces in the way
@@ -97,19 +98,15 @@ const ChessBoard: React.FC = () => {
     //     }
     // }
 
-    function isTurn(pieceFromPosition: Piece): boolean {
+    useEffect(() => {
+        // This useEffect will update isWhiteTurn when it changes
 
-        if (pieceFromPosition.type.toUpperCase() === pieceFromPosition.type && isWhiteTurn) {
-            return true
-        }
-        else if (pieceFromPosition.type.toLowerCase() === pieceFromPosition.type && !isWhiteTurn){
-            return true
-        }
-
-        return false;
-    }
+            setWhiteTurn((prev) => !prev);
+        
+    }, [pieces]);
 
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
+        let moveDone = false;
         setPieces((prevPieces) => {
 
             if (fromPosition.x === toPosition.x && fromPosition.y === toPosition.y) {
@@ -124,7 +121,11 @@ const ChessBoard: React.FC = () => {
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y
             );
 
-            if (!pieceFromPosition || !isTurn(pieceFromPosition)) {
+            if (!pieceFromPosition) {
+                return prevPieces;
+            }
+
+            if (!isTurn(pieceFromPosition, isWhiteTurn)) {
                 return prevPieces;
             }
 
@@ -154,7 +155,7 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-            setWhiteTurn((isWhiteTurn) => !isWhiteTurn)
+            moveDone = true;
 
             return updatedPieces;
         });
@@ -164,7 +165,7 @@ const ChessBoard: React.FC = () => {
         const piece = pieces.find(piece => piece.position.x === position.x && piece.position.y === position.y);
         return (
             <ChessTile position={position} positionName={postionName} color={color} onDrop={handleDrop}>
-                {piece && <DraggablePiece type={piece.type} position={piece.position} />}
+                {piece && <DraggablePiece type={piece.type} position={piece.position} /> }
             </ChessTile>
         );
     };
