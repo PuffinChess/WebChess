@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import ChessTile from './DroppableSquare';
 import { Position } from '../utils/Position';
 import { useState } from 'react';
@@ -15,7 +15,6 @@ import { isTurn } from '../rules/IsTurn';
 const ChessBoard: React.FC = () => {
 
     const [pieces, setPieces] = useState<Piece[]>([]);
-    const [isWhiteTurn, setWhiteTurn] = useState<boolean>(true);
     const [castlingRights, setCastlingRights] = useState({
         whiteShort: true,
         whiteLong: true,
@@ -28,7 +27,12 @@ const ChessBoard: React.FC = () => {
         const pieces: Piece[] = [];
         let fenString = params.fen
 
-        if (!fenString) { fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }
+        if (!fenString) { 
+            fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" 
+            sessionStorage.setItem("turn", "white")
+            sessionStorage.setItem("castling", "KQkq")
+        }
+
 
         const fenBoardSplit = fenString.split(' ')[0];
         const fenBoard = fenBoardSplit.replace(/\//g, "");
@@ -66,47 +70,20 @@ const ChessBoard: React.FC = () => {
     //     return `${letter}${number}`;
     // }
 
+    function castleKingSide(y: number, prevPieces: Piece[]): boolean {
+        const kingSidePieceInWay = prevPieces.find(piece =>
+            piece.position.x === 5 && piece.position.y === y);
+        if (kingSidePieceInWay) {
+            return false;
+        }
+        return true;
+    }
 
-    //castling check
-    // if (Object.values(castlingRights).some(val => val === true)) {
-    //     if (castlingRights.whiteShort && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 6)) {
-    //         //check if pieces in the way
-    //         const piece = prevPieces.find(piece =>
-    //             piece.position.x === 6 && piece.position.y === 7)
-    //         if (piece) {
-    //             return prevPieces;
-    //         }
-    //         else {
-    //             return
-    //         }
-    //     }
-    //     else if (castlingRights.blackShort && pieceFromPosition.type == PieceType.KingBlack && (toPosition.y === 0 && toPosition.x === 6)) {
-    //         //check if pieces in the way
-    //         const piece = prevPieces.find(piece =>
-    //             piece.position.x === 6 && piece.position.y === 7)
-    //         if (piece) {
-    //             return prevPieces;
-    //         }
-    //     }
-    //     else if (castlingRights.whiteLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
-    //         //check if pieces in the way
-    //         //perform moves
-    //     }
-    //     else if (castlingRights.blackLong && pieceFromPosition.type == PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
-    //         //check if pieces in the way
-    //         //perform moves
-    //     }
-    // }
+    function castleQueenSide() {
 
-    useEffect(() => {
-        // This useEffect will update isWhiteTurn when it changes
-
-            setWhiteTurn((prev) => !prev);
-        
-    }, [pieces]);
+    }
 
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
-        let moveDone = false;
         setPieces((prevPieces) => {
 
             if (fromPosition.x === toPosition.x && fromPosition.y === toPosition.y) {
@@ -125,10 +102,38 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-            if (!isTurn(pieceFromPosition, isWhiteTurn)) {
+            if (!isTurn(pieceFromPosition)) {
                 return prevPieces;
             }
 
+            //Castling rules King moves two squares right or left and then rook comes to the side of the king
+            //Cant castle after kind moved
+            //Cant castly in directon of rook if rook moved
+            //Cant castly in / through / into check
+            //No pieces inbetween the king and the rook
+
+            let castling = sessionStorage.getItem("castling")
+            if (castling?.includes("K") && pieceFromPosition.type === PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 6)) {
+                if(castleKingSide(7, prevPieces)){
+                    let kingMoved = prevPieces.map(piece => {
+                        if (piece.position.x === fromPosition.x && piece.position.y === fromPosition.y) {
+                            return { ...piece, position: { ...toPosition } }; // Create a new object with updated position
+                        }
+                        return piece;
+                    });
+                }
+            }
+            else if (castling?.includes("k") && pieceFromPosition.type === PieceType.KingBlack && (toPosition.y === 0 && toPosition.x === 6)) {
+                if (castleKingSide(0, prevPieces)) {
+
+                }
+            }
+            else if (castling?.includes("Q") && pieceFromPosition.type === PieceType.KingWhite && (toPosition.y === 7 && toPosition.x === 2)) {
+
+            }
+            else if (castling?.includes("q") && pieceFromPosition.type === PieceType.KingBlack && (toPosition.y === 0 && toPosition.x === 2)){
+
+            }
 
             if (!isPieceMovementLegal(pieceFromPosition, fromPosition, toPosition, prevPieces)) {
                 return prevPieces;
@@ -155,7 +160,12 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-            moveDone = true;
+            if (!isLowerCase(pieceFromPosition.type)){
+                sessionStorage.setItem("turn", "black")
+            }
+            else {
+                sessionStorage.setItem("turn", "white")
+            }
 
             return updatedPieces;
         });
