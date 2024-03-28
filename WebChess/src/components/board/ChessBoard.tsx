@@ -93,16 +93,10 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-            //Castling rules King moves two squares right or left and then rook comes to the side of the king
-            //Cant castle after kind moved
-            //Cant castly in directon of rook if rook moved
-            //Cant castly in / through / into check
-            //No pieces inbetween the king and the rook
-
             let castling = sessionStorage.getItem("castling")
             if (castling && castling.length > 0){
                 const castlingResult = performCastling(castling, pieceFromPosition, toPosition, fromPosition, prevPieces);
-                if (castlingResult  ){
+                if (castlingResult){
                     toggleTurn();
                     return castlingResult;
                 }
@@ -135,6 +129,24 @@ const ChessBoard: React.FC = () => {
 
             if (!(pieceFromPosition.type === PieceType.KingBlack || pieceFromPosition.type === PieceType.KingWhite) && InCheck(pieceFromPosition.type, updatedPieces)) {
                 return prevPieces;
+            }
+
+            if (castling && (castling.includes("K") || castling.includes("Q")) && pieceFromPosition.type === PieceType.KingWhite) {
+                castling = castling.replace(/[KQ]/g, '');
+            } else if (castling && (castling.includes("k") || castling.includes("q")) && pieceFromPosition.type === PieceType.KingBlack) {
+                castling = castling.replace(/[kq]/g, '');
+            } else if (castling && (castling.includes("K") || castling.includes("Q")) && pieceFromPosition.type === PieceType.RookWhite) {
+                if (fromPosition.x === 0 && fromPosition.y === 7) {
+                    castling = castling.replace(/[Q]/g, '');
+                } else if (fromPosition.x === 7 && fromPosition.y === 7) {
+                    castling = castling.replace(/[K]/g, '');
+                }
+            } else if (castling && (castling.includes("k") || castling.includes("q")) && pieceFromPosition.type === PieceType.RookBlack) {
+                if (fromPosition.x === 0 && fromPosition.y === 0) {
+                    castling = castling.replace(/[q]/g, '');
+                } else if (fromPosition.x === 7 && fromPosition.y === 0) {
+                    castling = castling.replace(/[k]/g, '');
+                }
             }
 
             toggleTurn();
