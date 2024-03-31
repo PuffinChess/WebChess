@@ -22,8 +22,8 @@ const ChessBoard: React.FC = () => {
         const pieces: Piece[] = [];
         let fenString = params.fen
 
-        if (!fenString) { 
-            fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" 
+        if (!fenString) {
+            fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             sessionStorage.setItem("turn", "white")
             sessionStorage.setItem("castling", "KQkq")
         }
@@ -74,6 +74,41 @@ const ChessBoard: React.FC = () => {
         }
     }
 
+    function castlingRightsUpdater(pieceFromPosition: Piece, castling: string, fromPosition: Position) {
+        switch (pieceFromPosition.type) {
+            case PieceType.KingWhite:
+                if (castling.includes("K") || castling.includes("Q")) {
+                    castling = castling.replace(/[KQ]/g, '');
+                }
+                break;
+            case PieceType.KingBlack:
+                if (castling.includes("k") || castling.includes("q")) {
+                    castling = castling.replace(/[kq]/g, '');
+                }
+                break;
+            case PieceType.RookWhite:
+                if (castling.includes("K") && fromPosition.x === 7 && fromPosition.y === 7) {
+                    castling = castling.replace(/[K]/g, '');
+                }
+                else if (castling.includes("Q") && fromPosition.x === 0 && fromPosition.y === 7) {
+                    castling = castling.replace(/[Q]/g, '');
+                }
+                break;
+            case PieceType.RookBlack:
+                if (castling.includes("k") || castling.includes("q")) {
+                    if (fromPosition.x === 0 && fromPosition.y === 0) {
+                        castling = castling.replace(/[q]/g, '');
+                    } else if (fromPosition.x === 7 && fromPosition.y === 0) {
+                        castling = castling.replace(/[k]/g, '');
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        sessionStorage.setItem("castling", castling);
+    }
+
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
         setPieces((prevPieces) => {
 
@@ -94,9 +129,9 @@ const ChessBoard: React.FC = () => {
             }
 
             let castling = sessionStorage.getItem("castling")
-            if (castling && castling.length > 0){
+            if (castling && castling.length > 0) {
                 const castlingResult = performCastling(castling, pieceFromPosition, toPosition, fromPosition, prevPieces);
-                if (castlingResult){
+                if (castlingResult) {
                     toggleTurn();
                     return castlingResult;
                 }
@@ -131,23 +166,10 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-            if (castling && (castling.includes("K") || castling.includes("Q")) && pieceFromPosition.type === PieceType.KingWhite) {
-                castling = castling.replace(/[KQ]/g, '');
-            } else if (castling && (castling.includes("k") || castling.includes("q")) && pieceFromPosition.type === PieceType.KingBlack) {
-                castling = castling.replace(/[kq]/g, '');
-            } else if (castling && (castling.includes("K") || castling.includes("Q")) && pieceFromPosition.type === PieceType.RookWhite) {
-                if (fromPosition.x === 0 && fromPosition.y === 7) {
-                    castling = castling.replace(/[Q]/g, '');
-                } else if (fromPosition.x === 7 && fromPosition.y === 7) {
-                    castling = castling.replace(/[K]/g, '');
-                }
-            } else if (castling && (castling.includes("k") || castling.includes("q")) && pieceFromPosition.type === PieceType.RookBlack) {
-                if (fromPosition.x === 0 && fromPosition.y === 0) {
-                    castling = castling.replace(/[q]/g, '');
-                } else if (fromPosition.x === 7 && fromPosition.y === 0) {
-                    castling = castling.replace(/[k]/g, '');
-                }
+            if (castling) {
+                castlingRightsUpdater(pieceFromPosition, castling, fromPosition);
             }
+
 
             toggleTurn();
 
@@ -159,7 +181,7 @@ const ChessBoard: React.FC = () => {
         const piece = pieces.find(piece => piece.position.x === position.x && piece.position.y === position.y);
         return (
             <ChessTile position={position} positionName={postionName} color={color} onDrop={handleDrop}>
-                {piece && <DraggablePiece type={piece.type} position={piece.position} /> }
+                {piece && <DraggablePiece type={piece.type} position={piece.position} />}
             </ChessTile>
         );
     };
