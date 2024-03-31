@@ -18,16 +18,27 @@ export function isLegalPawnMovement(fromPosition: Position, toPosition: Position
             const capture = prevPieces.find(piece =>
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y)
 
+            let enpassantCapture = false;
+            const enpassant = sessionStorage.getItem("enpassant");
+            if (enpassant && enpassant.length > 0) {
+                const x: number = parseInt(enpassant[0]);
+                const y: number = parseInt(enpassant[1]);
+
+                if (x === toPosition.x && y === toPosition.y + 1) {
+                    enpassantCapture = true;
+                } 
+            }
+
             if (movementX === 0 && movementY === 1 && !pieceOneAhead) {
                 return true;
             }
             else if (movementX === 0 && movementY === 2 && fromPosition.y === 6 && !pieceOneAhead && !pieceTwoAhead) {
                 return true;
             }
-            else if (movementX === 1 && movementY === 1 && capture) {
+            else if (movementX === 1 && movementY === 1 && (capture || enpassantCapture)) {
                 return true
             }
-            else if (movementX === -1 && movementY === 1 && capture) {
+            else if (movementX === -1 && movementY === 1 && (capture || enpassantCapture)) {
                 return true
             }
             return false;
@@ -41,8 +52,17 @@ export function isLegalPawnMovement(fromPosition: Position, toPosition: Position
 
             const capture = prevPieces.find(piece =>
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y);
-            
-                console.log(capture)
+
+            let enpassantCapture = false;
+            const enpassant = sessionStorage.getItem("enpassant");
+            if (enpassant && enpassant.length > 0) {
+                const x: number = parseInt(enpassant[0]);
+                const y: number = parseInt(enpassant[1]);
+
+                if (x === toPosition.x && y === toPosition.y - 1) {
+                    enpassantCapture = true;
+                }
+            }
 
             if (movementX === 0 && movementY === -1 && !pieceOneAhead) {
                 return true;
@@ -50,10 +70,10 @@ export function isLegalPawnMovement(fromPosition: Position, toPosition: Position
             else if (movementX === 0 && movementY === -2 && fromPosition.y === 1 && !pieceOneAhead && !pieceTwoAhead) {
                 return true;
             }
-            else if (movementX === 1 && movementY === -1 && capture) {
+            else if (movementX === 1 && movementY === -1 && (capture || enpassantCapture)) {
                 return true
             }
-            else if (movementX === -1 && movementY === -1 && capture) {
+            else if (movementX === -1 && movementY === -1 && (capture || enpassantCapture)) {
                 return true
             }
             return false;

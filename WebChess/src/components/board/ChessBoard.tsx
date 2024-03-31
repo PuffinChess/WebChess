@@ -26,6 +26,7 @@ const ChessBoard: React.FC = () => {
             fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             sessionStorage.setItem("turn", "white")
             sessionStorage.setItem("castling", "KQkq")
+            sessionStorage.setItem("enpassant", "")
         }
 
 
@@ -65,6 +66,7 @@ const ChessBoard: React.FC = () => {
     //     return `${letter}${number}`;
     // }
 
+    //Switches between white turn and black turn
     function toggleTurn() {
         let currentPlayerColor = sessionStorage.getItem('turn');
         if (currentPlayerColor === 'white') {
@@ -74,6 +76,7 @@ const ChessBoard: React.FC = () => {
         }
     }
 
+    //Removes right for certain types of castling depending on piece movement //Could move to different file
     function castlingRightsUpdater(pieceFromPosition: Piece, castling: string, fromPosition: Position) {
         switch (pieceFromPosition.type) {
             case PieceType.KingWhite:
@@ -109,7 +112,19 @@ const ChessBoard: React.FC = () => {
         sessionStorage.setItem("castling", castling);
     }
 
+    //En passant updater
+    function isEnpassantableCheck(fromY: number, toY: number, toX: number) {
+        if (Math.abs(fromY - toY) == 2) {
+            sessionStorage.setItem("enpassant", `${toX}${toY}`)
+        }
+        else {
+            sessionStorage.setItem("enpassant", ``)
+        }
+    }
+
+    //Handle drop of pieces
     const handleDrop = (fromPosition: Position, toPosition: Position) => {
+        //On piece move checks for chess rules for legality of the move.
         setPieces((prevPieces) => {
 
             if (fromPosition.x === toPosition.x && fromPosition.y === toPosition.y) {
@@ -153,6 +168,22 @@ const ChessBoard: React.FC = () => {
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y
             );
 
+            //need to do an enpassant check
+            let pieceEnpassantPosition: Piece;
+            const enpassant = sessionStorage.getItem("enpassant");
+            if (enpassant && enpassant.length > 0) {
+                const x: number = parseInt(enpassant[0]);
+                const y: number = parseInt(enpassant[1]);
+
+                const pieceEnpassantPositionTemp = prevPieces.find(piece =>
+                    piece.position.x === x && piece.position.y === y
+                );
+
+                if (pieceEnpassantPositionTemp) {
+                    pieceEnpassantPosition = pieceEnpassantPositionTemp;
+                }
+            }
+
             // Checks if there is a piece at the location and filter it out if captured
             if (pieceAtPosition && pieceFromPosition) {
                 if (isLowerCase(pieceAtPosition.type) !== isLowerCase(pieceFromPosition.type)) {
@@ -160,6 +191,8 @@ const ChessBoard: React.FC = () => {
                 } else {
                     return prevPieces;
                 }
+            } else if (!pieceAtPosition && pieceFromPosition && pieceEnpassantPosition && ) {
+                updatedPieces = updatedPieces.filter(obj => obj.position !== pieceEnpassantPosition.position);
             }
 
             if (!(pieceFromPosition.type === PieceType.KingBlack || pieceFromPosition.type === PieceType.KingWhite) && InCheck(pieceFromPosition.type, updatedPieces)) {
@@ -170,6 +203,11 @@ const ChessBoard: React.FC = () => {
                 castlingRightsUpdater(pieceFromPosition, castling, fromPosition);
             }
 
+            if (pieceFromPosition.type == PieceType.PawnBlack || PieceType.PawnWhite) {
+                isEnpassantableCheck(fromPosition.y, toPosition.y, toPosition.x)
+            } else {
+                sessionStorage.setItem("enpassant", ``)
+            }
 
             toggleTurn();
 
@@ -177,6 +215,7 @@ const ChessBoard: React.FC = () => {
         });
     };
 
+    //Render chess tile with/without piece
     const renderTile = (position: Position, postionName: string, color: 'white' | 'black') => {
         const piece = pieces.find(piece => piece.position.x === position.x && piece.position.y === position.y);
         return (
@@ -186,6 +225,7 @@ const ChessBoard: React.FC = () => {
         );
     };
 
+    //Render chess board
     const renderBoard = () => {
         const tiles = [];
         for (let y = 0; y < 8; y++) {
