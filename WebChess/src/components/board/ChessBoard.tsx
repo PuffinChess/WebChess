@@ -168,31 +168,23 @@ const ChessBoard: React.FC = () => {
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y
             );
 
-            //need to do an enpassant check
-            let pieceEnpassantPosition: Piece;
             const enpassant = sessionStorage.getItem("enpassant");
-            if (enpassant && enpassant.length > 0) {
-                const x: number = parseInt(enpassant[0]);
-                const y: number = parseInt(enpassant[1]);
-
-                const pieceEnpassantPositionTemp = prevPieces.find(piece =>
-                    piece.position.x === x && piece.position.y === y
-                );
-
-                if (pieceEnpassantPositionTemp) {
-                    pieceEnpassantPosition = pieceEnpassantPositionTemp;
-                }
-            }
 
             // Checks if there is a piece at the location and filter it out if captured
             if (pieceAtPosition && pieceFromPosition) {
+                //Check youre not capturing a piece of the same colour
                 if (isLowerCase(pieceAtPosition.type) !== isLowerCase(pieceFromPosition.type)) {
                     updatedPieces = updatedPieces.filter(obj => obj.position !== pieceAtPosition.position);
                 } else {
                     return prevPieces;
                 }
-            } else if (!pieceAtPosition && pieceFromPosition && pieceEnpassantPosition && ) {
-                updatedPieces = updatedPieces.filter(obj => obj.position !== pieceEnpassantPosition.position);
+            } else if (!pieceAtPosition && pieceFromPosition && enpassant && enpassant.length > 0 ) {
+                const x: number = parseInt(enpassant[0]);
+                const y: number = parseInt(enpassant[1]);
+                console.log(x, y)
+                if (x === toPosition.x && (pieceFromPosition.type === PieceType.PawnBlack && y === toPosition.y - 1) || (pieceFromPosition.type === PieceType.PawnWhite && y === toPosition.y + 1))  {
+                    updatedPieces = updatedPieces.filter(obj => !(obj.position.x === x && obj.position.y === y));
+                }               
             }
 
             if (!(pieceFromPosition.type === PieceType.KingBlack || pieceFromPosition.type === PieceType.KingWhite) && InCheck(pieceFromPosition.type, updatedPieces)) {
