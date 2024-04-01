@@ -1,4 +1,3 @@
-import React from 'react';
 
 const PromotionSelection = ({ onSelectPiece }: any) => {
     const pieces = ['queen', 'rook', 'bishop', 'knight']; // Available promotion options
@@ -10,7 +9,7 @@ const PromotionSelection = ({ onSelectPiece }: any) => {
     return (
         <div className="promotion-popup">
             <h2>Promote Pawn!</h2>
-            <div className="promotion-options">
+            <div className="promotion-optins">
                 {pieces.map((piece) => (
                     <button key={piece} onClick={() => handleSelectPiece(piece)}>
                         {piece}

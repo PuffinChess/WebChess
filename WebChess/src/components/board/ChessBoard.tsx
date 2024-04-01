@@ -13,7 +13,6 @@ import { isLowerCase } from '../utils/IsLowerCase';
 import { isTurn } from '../rules/IsTurn';
 import { performCastling } from '../rules/PerformCastling';
 import { castlingRightsUpdater } from '../rules/CastlingRightsUpdater';
-import PromotionPopup from './PromotionSelectorPopup';
 import PromotionSelection from './PromotionSelector';
 
 const ChessBoard: React.FC = () => {
