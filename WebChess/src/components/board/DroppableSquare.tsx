@@ -4,9 +4,9 @@ import { Piece } from '../pieces/Piece';
 import { ChessTileProps } from './Square';
 
 const ChessTile: React.FC<ChessTileProps> = ({ position, color, onDrop, children }) => {
-    const [{ isOver, canDrop }, drop] = useDrop(() => ({
+    const [{ isOver }, drop] = useDrop(() => ({
         accept: 'PIECE',
-        drop: (item: Piece, monitor) => {
+        drop: (item: Piece) => {
             onDrop(item.position, position);
         },
         collect: (monitor) => ({

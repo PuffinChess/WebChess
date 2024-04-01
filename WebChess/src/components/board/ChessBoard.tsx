@@ -12,11 +12,15 @@ import { InCheck } from '../rules/InCheck';
 import { isLowerCase } from '../utils/IsLowerCase';
 import { isTurn } from '../rules/IsTurn';
 import { performCastling } from '../rules/PerformCastling';
+import { castlingRightsUpdater } from '../rules/CastlingRightsUpdater';
+import PromotionPopup from './PromotionSelectorPopup';
+import PromotionSelection from './PromotionSelector';
 
 const ChessBoard: React.FC = () => {
 
     const [pieces, setPieces] = useState<Piece[]>([]);
     const params = useParams();
+    const [isPromotionActive, setIsPromotionActive] = useState(false);
 
     useEffect(() => {
         const pieces: Piece[] = [];
@@ -76,42 +80,6 @@ const ChessBoard: React.FC = () => {
         }
     }
 
-    //Removes right for certain types of castling depending on piece movement //Could move to different file
-    function castlingRightsUpdater(pieceFromPosition: Piece, castling: string, fromPosition: Position) {
-        switch (pieceFromPosition.type) {
-            case PieceType.KingWhite:
-                if (castling.includes("K") || castling.includes("Q")) {
-                    castling = castling.replace(/[KQ]/g, '');
-                }
-                break;
-            case PieceType.KingBlack:
-                if (castling.includes("k") || castling.includes("q")) {
-                    castling = castling.replace(/[kq]/g, '');
-                }
-                break;
-            case PieceType.RookWhite:
-                if (castling.includes("K") && fromPosition.x === 7 && fromPosition.y === 7) {
-                    castling = castling.replace(/[K]/g, '');
-                }
-                else if (castling.includes("Q") && fromPosition.x === 0 && fromPosition.y === 7) {
-                    castling = castling.replace(/[Q]/g, '');
-                }
-                break;
-            case PieceType.RookBlack:
-                if (castling.includes("k") || castling.includes("q")) {
-                    if (fromPosition.x === 0 && fromPosition.y === 0) {
-                        castling = castling.replace(/[q]/g, '');
-                    } else if (fromPosition.x === 7 && fromPosition.y === 0) {
-                        castling = castling.replace(/[k]/g, '');
-                    }
-                }
-                break;
-            default:
-                break;
-        }
-        sessionStorage.setItem("castling", castling);
-    }
-
     //En passant updater
     function isEnpassantableCheck(fromY: number, toY: number, toX: number) {
         if (Math.abs(fromY - toY) == 2) {
@@ -122,15 +90,50 @@ const ChessBoard: React.FC = () => {
         }
     }
 
+    const handlePawnPromotion = (piece: string) => {
+        setPieces((prevPieces) => {
+            
+            switch(piece) {
+                case "queen": 
+                    console.log("queen");
+                    break;
+                case "rook": 
+                    console.log("rook");
+                    break;
+                case "bishop":
+                    console.log("bishop");
+                    break; 
+                case "knight": 
+                    console.log("knight");
+                    break;
+                default:
+                    console.log("didntwork");
+                    break;
+            }
+            
+            return prevPieces;
+        
+        });
+
+        setIsPromotionActive(false);
+    };
+
+    function pawnPromotion(){
+        setIsPromotionActive(true);
+    }
+
     //Handle drop of pieces
-    const handleDrop = (fromPosition: Position, toPosition: Position) => {
+    const handleDrop = async (fromPosition: Position, toPosition: Position) => {
+        
         //On piece move checks for chess rules for legality of the move.
         setPieces((prevPieces) => {
 
+            //Verify that the move is a move not a drop back at the same spot.
             if (fromPosition.x === toPosition.x && fromPosition.y === toPosition.y) {
                 return prevPieces;
             }
 
+            //Get piece at location and check if there actually is one
             const pieceFromPosition = prevPieces.find(piece =>
                 piece.position.x === fromPosition.x && piece.position.y === fromPosition.y
             );
@@ -139,12 +142,14 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
+            //Check if it is the turn of the piece colour moved
             if (!isTurn(pieceFromPosition)) {
                 return prevPieces;
             }
 
+            //Get castling string then see if the move performed was an attempted castle
             let castling = sessionStorage.getItem("castling")
-            if (castling && castling.length > 0) {
+            if (castling && castling.length > 0 && (pieceFromPosition.type === PieceType.KingBlack || pieceFromPosition.type === PieceType.KingWhite)) {
                 const castlingResult = performCastling(castling, pieceFromPosition, toPosition, fromPosition, prevPieces);
                 if (castlingResult) {
                     toggleTurn();
@@ -152,6 +157,7 @@ const ChessBoard: React.FC = () => {
                 }
             }
 
+            //Check if the move attempted to be performed is a legal move.
             if (!isPieceMovementLegal(pieceFromPosition, fromPosition, toPosition, prevPieces)) {
                 return prevPieces;
             }
@@ -164,13 +170,13 @@ const ChessBoard: React.FC = () => {
                 return piece;
             });
 
+            //Check if there is a piece at the position that was attempted to be moved to.
             const pieceAtPosition = prevPieces.find(piece =>
                 piece.position.x === toPosition.x && piece.position.y === toPosition.y
             );
 
             const enpassant = sessionStorage.getItem("enpassant");
-
-            // Checks if there is a piece at the location and filter it out if captured
+            // Checks if there is a piece at the location and filter it out if captured - if not checks if the piece was an enpassant move
             if (pieceAtPosition && pieceFromPosition) {
                 //Check youre not capturing a piece of the same colour
                 if (isLowerCase(pieceAtPosition.type) !== isLowerCase(pieceFromPosition.type)) {
@@ -178,7 +184,8 @@ const ChessBoard: React.FC = () => {
                 } else {
                     return prevPieces;
                 }
-            } else if (!pieceAtPosition && pieceFromPosition && enpassant && enpassant.length > 0 ) {
+            }
+            else if (!pieceAtPosition && pieceFromPosition && enpassant && enpassant.length > 0 ) {
                 const x: number = parseInt(enpassant[0]);
                 const y: number = parseInt(enpassant[1]);
                 console.log(x, y)
@@ -187,18 +194,30 @@ const ChessBoard: React.FC = () => {
                 }               
             }
 
-            if (!(pieceFromPosition.type === PieceType.KingBlack || pieceFromPosition.type === PieceType.KingWhite) && InCheck(pieceFromPosition.type, updatedPieces)) {
+            if (InCheck(pieceFromPosition.type, updatedPieces)) {
                 return prevPieces;
             }
 
+            //Check if its castling and then perform
             if (castling) {
                 castlingRightsUpdater(pieceFromPosition, castling, fromPosition);
             }
 
+            //Check if it is Enpassant and then perform move
             if (pieceFromPosition.type == PieceType.PawnBlack || PieceType.PawnWhite) {
                 isEnpassantableCheck(fromPosition.y, toPosition.y, toPosition.x)
             } else {
                 sessionStorage.setItem("enpassant", ``)
+            }
+
+            //Made for pawn promotion
+            if (pieceFromPosition.type === PieceType.PawnWhite && toPosition.y === 0) {
+                //Promote White
+                pawnPromotion();
+            }
+            else if (pieceFromPosition.type === PieceType.PawnBlack && toPosition.y === 7) {
+                //Promote Black
+                pawnPromotion();
             }
 
             toggleTurn();
@@ -206,6 +225,8 @@ const ChessBoard: React.FC = () => {
             return updatedPieces;
         });
     };
+
+ 
 
     //Render chess tile with/without piece
     const renderTile = (position: Position, postionName: string, color: 'white' | 'black') => {
@@ -230,10 +251,13 @@ const ChessBoard: React.FC = () => {
         }
         return tiles;
     };
-
+ 
     return (
         <div className='chessboard'>
             {renderBoard()}
+            {isPromotionActive && (
+                <PromotionSelection onSelectPiece={handlePawnPromotion} />
+            )}
         </div>
     );
 };
