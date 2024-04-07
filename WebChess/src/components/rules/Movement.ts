@@ -37,13 +37,13 @@ export function isPieceMovementLegal(pieceFromPosition: Piece, fromPosition: Pos
             return true;
         }
         case PieceType.KnightBlack: {
-            if (!isLegalKnightMovement(fromPosition, toPosition, prevPieces)) {
+            if (!isLegalKnightMovement(fromPosition, toPosition)) {
                 return false;
             }
             return true;
         }
         case PieceType.KnightWhite: {
-            if (!isLegalKnightMovement(fromPosition, toPosition, prevPieces)) {
+            if (!isLegalKnightMovement(fromPosition, toPosition)) {
                 return false;
             }
             return true;

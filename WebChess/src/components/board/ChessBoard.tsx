@@ -91,27 +91,73 @@ const ChessBoard: React.FC = () => {
 
     const handlePawnPromotion = (piece: string) => {
         setPieces((prevPieces) => {
-            
-            switch(piece) {
-                case "queen": 
-                    console.log("queen");
-                    break;
-                case "rook": 
-                    console.log("rook");
-                    break;
-                case "bishop":
-                    console.log("bishop");
-                    break; 
-                case "knight": 
-                    console.log("knight");
-                    break;
-                default:
-                    console.log("didntwork");
-                    break;
+            const blackPawn = prevPieces.find(piece =>
+                piece.type === PieceType.PawnBlack && piece.position.y === 7
+            );
+
+            const whitePawn = prevPieces.find(piece =>
+                piece.type === PieceType.PawnWhite && piece.position.y === 0
+            );
+
+            let promotion: PieceType;
+
+            if (whitePawn){
+                switch(piece) {
+                    case "queen": 
+                        promotion = PieceType.QueenWhite
+                        break;
+                    case "rook": 
+                        promotion = PieceType.RookWhite
+                        break;
+                    case "bishop":
+                        promotion = PieceType.BishopWhite
+                        break; 
+                    case "knight": 
+                        promotion = PieceType.KnightWhite
+                        break;
+                    default:
+                        console.log("didntwork");
+                        return prevPieces;
+                }    
+                let updatedPieces = prevPieces.map(piece => {
+                    if (piece.position.x === whitePawn.position.x && piece.position.y === whitePawn.position.y) {
+                        return { ...piece, type: promotion }; // Create a new object with updated position
+                    }
+                    return piece;
+                });
+
+                return updatedPieces;
             }
+            else if (blackPawn){ 
+                switch(piece) {
+                    case "queen": 
+                        promotion = PieceType.QueenBlack
+                        break;
+                    case "rook": 
+                        promotion = PieceType.RookBlack
+                        break;
+                    case "bishop":
+                        promotion = PieceType.BishopBlack
+                        break; 
+                    case "knight": 
+                        promotion = PieceType.KnightBlack
+                        break;
+                    default:
+                        return prevPieces;
+                }  
+
+                let updatedPieces = prevPieces.map(piece => {
+                    if (piece.position.x === blackPawn.position.x && piece.position.y === blackPawn.position.y) {
+                        return { ...piece, type: promotion }; // Create a new object with updated position
+                    }
+                    return piece;
+                });
+
+                return updatedPieces;
+            }
+                return prevPieces;
             
-            return prevPieces;
-        
+            
         });
 
         setIsPromotionActive(false);
@@ -141,7 +187,7 @@ const ChessBoard: React.FC = () => {
                 return prevPieces;
             }
 
-            //Check if it is the turn of the piece colour moved
+            //Check if it is the turn of the piece colour moved 
             if (!isTurn(pieceFromPosition)) {
                 return prevPieces;
             }
