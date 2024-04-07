@@ -126,6 +126,7 @@ const ChessBoard: React.FC = () => {
                     return piece;
                 });
 
+                sessionStorage.setItem('turn', 'black');
                 return updatedPieces;
             }
             else if (blackPawn){ 
@@ -152,12 +153,12 @@ const ChessBoard: React.FC = () => {
                     }
                     return piece;
                 });
-
+                
+                sessionStorage.setItem('turn', 'white');
                 return updatedPieces;
             }
-                return prevPieces;
             
-            
+            return prevPieces;
         });
 
         setIsPromotionActive(false);
@@ -264,8 +265,9 @@ const ChessBoard: React.FC = () => {
                 //Promote Black
                 pawnPromotion();
             }
-
-            toggleTurn();
+            else {
+                toggleTurn();
+            }
 
             return updatedPieces;
         });
