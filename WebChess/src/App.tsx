@@ -19,8 +19,9 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Landingpage />} />
-            <Route path="/chessboard/" element={<ChessBoard />} />
-            <Route path="/chessboard/:fen" element={<ChessBoard />} />
+            <Route path="/chessboard/:type" element={<ChessBoard />} />
+            <Route path="/chessboard/:type/:colour" element={<ChessBoard />} />
+            <Route path="/chessboard/:type/:colour/:fen" element={<ChessBoard />} />
           </Routes>
         </Router>
       </DndProvider>

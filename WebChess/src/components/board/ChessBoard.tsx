@@ -23,7 +23,21 @@ const ChessBoard: React.FC = () => {
 
     useEffect(() => {
         const pieces: Piece[] = [];
+        let gameType = params.type
         let fenString = params.fen
+
+        if (gameType == "local"){
+            sessionStorage.setItem("gameType", "local")
+
+        } else if (gameType = "bot"){
+            let pieceColour = params.colour
+
+            if (pieceColour = "white") {
+                sessionStorage.setItem("gameType", "bot-black") //Player picks white so the bot is playing black
+            } else if (pieceColour = "black") {
+                sessionStorage.setItem("gameType", "bot-white") //Player picked black so the bot is playing white
+            }
+        }
 
         if (!fenString) {
             fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -31,7 +45,6 @@ const ChessBoard: React.FC = () => {
             sessionStorage.setItem("castling", "KQkq")
             sessionStorage.setItem("enpassant", "")
         }
-
 
         const fenBoardSplit = fenString.split(' ')[0];
         const fenBoard = fenBoardSplit.replace(/\//g, "");
@@ -74,8 +87,14 @@ const ChessBoard: React.FC = () => {
         let currentPlayerColor = sessionStorage.getItem('turn');
         if (currentPlayerColor === 'white') {
             sessionStorage.setItem('turn', 'black');
+            if (sessionStorage.getItem('gameType') == "bot-black"){
+                //Call api for letting black know its their turn
+            }
         } else {
             sessionStorage.setItem('turn', 'white');
+            if (sessionStorage.getItem('gameType') == "bot-white"){
+                //Call api for letting white know its their turn
+            }
         }
     }
 
