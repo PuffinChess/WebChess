@@ -1,9 +1,9 @@
-This is my react based implementation for plaing chess in a browser. Is designed around working with my chess engine that is currently in development.
+This is my react based implementation for plaing chess in a browser. Is designed around working with my chess engine that is currently in development. \n
 
-All rules except for checkmate are covered since checkmate.
+All rules except for checkmate are covered. \n
 
-Stack:
-  Vite React
-  Typescript
-  SCSS
-  ReactDND
+Stack: \n
+  Vite React \n
+  Typescript \n
+  SCSS \n 
+  ReactDND \n
