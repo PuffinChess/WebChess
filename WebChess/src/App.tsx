@@ -5,6 +5,11 @@ import ChessBoard from './components/board/ChessBoard';
 import { Position } from './components/utils/Position';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { startNewGame } from './api/UCI';
+
+function testApi() {
+    console.log(startNewGame());
+}
 
 function App() {
   // Define the onDrop function
@@ -24,6 +29,7 @@ function App() {
           </Routes>
         </Router>
       </DndProvider>
+      <button onClick={() => testApi()}>TestApi</button>
     </div>
   );
 }
