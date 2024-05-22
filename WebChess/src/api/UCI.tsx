@@ -19,21 +19,30 @@ export async function startNewGame(): Promise<string | null> {
     //     console.error(error);
     //     return null
     // }
-    fetch('https://localhost:7053/api/UCI', { method: "GET" }) // Construct url
-        .then((res) => {
-            if (!res.ok) {
-                throw new Error('Network response was not ok ' + res.statusText);
-            }
-        })
-        .then((data) => {
-            console.log(data);
-            return data
-        })
-        .catch((error) => {
-            console.error('There was a problem with the fetch operation:', error);
-        });
+    const response = await fetch('http://localhost:5247/api/UCI/', 
+    { 
+        method: "GET", 
+        headers: {
+            'Access-Control-Allow-Origin':'*'
+          }
+    }) 
 
-    return null
+    console.log(await response.text());
+
+
+    const response2 = await fetch('http://localhost:5247/api/UCI/', 
+    { 
+        method: "POST", 
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'*'
+          },
+          body: JSON.stringify("uci")
+    }) 
+
+    console.log(await response2.text());
+
+    return null;
 }
 
 // async function startNewGameaFEN(message: string): Promise<string | null> {
