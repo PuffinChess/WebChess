@@ -277,7 +277,6 @@ const ChessBoard: React.FC = () => {
             else if (!pieceAtPosition && pieceFromPosition && enpassant && enpassant.length > 0) {
                 const x: number = parseInt(enpassant[0]);
                 const y: number = parseInt(enpassant[1]);
-                console.log(x, y)
                 if (x === toPosition.x && (pieceFromPosition.type === PieceType.PawnBlack && y === toPosition.y - 1) || (pieceFromPosition.type === PieceType.PawnWhite && y === toPosition.y + 1)) {
                     updatedPieces = updatedPieces.filter(obj => !(obj.position.x === x && obj.position.y === y));
                 }
