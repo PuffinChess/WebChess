@@ -5,7 +5,7 @@ import { useState } from 'react';
 import DraggablePiece from '../pieces/DraggablePiece';
 import { PieceType } from '../pieces/PieceType';
 import { Piece } from '../pieces/Piece';
-import { useParams } from 'react-router-dom';
+import { redirect, useParams } from 'react-router-dom';
 import { getPieceType } from '../pieces/GetPieceType';
 import { isPieceMovementLegal } from '../rules/Movement';
 import { InCheck } from '../rules/InCheck';
@@ -14,9 +14,11 @@ import { isTurn } from '../rules/IsTurn';
 import { performCastling } from '../rules/PerformCastling';
 import { castlingRightsUpdater } from '../rules/CastlingRightsUpdater';
 import PromotionSelection from './PromotionSelector';
+import { startNewGameUCI } from '../../api/UCI';
+import { useNavigate } from 'react-router-dom';
 
 const ChessBoard: React.FC = () => {
-
+    const navigate = useNavigate();
     const [pieces, setPieces] = useState<Piece[]>([]);
     const params = useParams();
     const [isPromotionActive, setIsPromotionActive] = useState(false);
@@ -24,39 +26,69 @@ const ChessBoard: React.FC = () => {
     useEffect(() => {
         const pieces: Piece[] = [];
         let fenString = params.fen
+        let gameType = params.type
+        let colour = params.colour
+        let gameReady : Promise<Boolean>
 
-        if (!fenString) {
-            fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            sessionStorage.setItem("turn", "white")
-            sessionStorage.setItem("castling", "KQkq")
-            sessionStorage.setItem("enpassant", "")
-        }
+        async function gameStart() {
 
+            if (gameType === "bot") {
+                gameReady = startNewGameUCI();
+            }
 
-        const fenBoardSplit = fenString.split(' ')[0];
-        const fenBoard = fenBoardSplit.replace(/\//g, "");
+            if (!fenString) {
+                fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+                sessionStorage.setItem("turn", "white")
+                sessionStorage.setItem("castling", "KQkq")
+                sessionStorage.setItem("enpassant", "")
+                sessionStorage.setItem("moves", "startpos")
+            }
 
-        let i = 0;
-        for (let y = 0; y < 8; y++) {
-            let counter = 0;
-            for (let x = 0; x < 8; x++) {
-                if (counter > 0) {
-                    counter--;
-                }
-                else if (!isNaN(Number(fenBoard[i]))) {
-                    counter = counter + (Number(fenBoard[i]) - 1);
-                    i++
-                }
-                else {
-                    const pieceType = getPieceType(fenBoard[i]);
-                    if (pieceType !== undefined) {
-                        pieces.push({ type: pieceType, position: { x: x, y: y } });
+            const fenBoardSplit = fenString.split(' ')[0];
+            const fenBoard = fenBoardSplit.replace(/\//g, "");
+
+            let i = 0;
+            for (let y = 0; y < 8; y++) {
+                let counter = 0;
+                for (let x = 0; x < 8; x++) {
+                    if (counter > 0) {
+                        counter--;
+                    }
+                    else if (!isNaN(Number(fenBoard[i]))) {
+                        counter = counter + (Number(fenBoard[i]) - 1);
                         i++
+                    }
+                    else {
+                        const pieceType = getPieceType(fenBoard[i]);
+                        if (pieceType !== undefined) {
+                            pieces.push({ type: pieceType, position: { x: x, y: y } });
+                            i++
+                        }
                     }
                 }
             }
+
+            setPieces(pieces);
+
+            if (gameType === "bot") {
+                if (await gameReady !== true) {
+                    alert("Couldnt Start Game")
+                    navigate('/')
+                }
+
+                if (colour) {
+                    sessionStorage.setItem("botColour", colour);
+                    if (colour === "white") {
+                        //Tell the bot to play a move
+                    }
+                }
+            }
+            else {
+                sessionStorage.removeItem("botColour");
+            }
         }
-        setPieces(pieces);
+
+        gameStart();
     }, []);
 
     // function convertToChessPosition(position: Position): string {
@@ -71,11 +103,22 @@ const ChessBoard: React.FC = () => {
 
     //Switches between white turn and black turn
     function toggleTurn() {
+        let botColour = sessionStorage.getItem("botColour");
         let currentPlayerColor = sessionStorage.getItem('turn');
         if (currentPlayerColor === 'white') {
+            currentPlayerColor = "black";
             sessionStorage.setItem('turn', 'black');
         } else {
+            currentPlayerColor = "white";
             sessionStorage.setItem('turn', 'white');
+        }
+
+        if (botColour) {
+            //Checking if its the bots turn
+            if ((botColour === currentPlayerColor) ||
+                (botColour === currentPlayerColor)) {
+                //Todo: API CALL HERE
+            }
         }
     }
 
@@ -101,24 +144,24 @@ const ChessBoard: React.FC = () => {
 
             let promotion: PieceType;
 
-            if (whitePawn){
-                switch(piece) {
-                    case "queen": 
+            if (whitePawn) {
+                switch (piece) {
+                    case "queen":
                         promotion = PieceType.QueenWhite
                         break;
-                    case "rook": 
+                    case "rook":
                         promotion = PieceType.RookWhite
                         break;
                     case "bishop":
                         promotion = PieceType.BishopWhite
-                        break; 
-                    case "knight": 
+                        break;
+                    case "knight":
                         promotion = PieceType.KnightWhite
                         break;
                     default:
                         console.log("didntwork");
                         return prevPieces;
-                }    
+                }
                 let updatedPieces = prevPieces.map(piece => {
                     if (piece.position.x === whitePawn.position.x && piece.position.y === whitePawn.position.y) {
                         return { ...piece, type: promotion }; // Create a new object with updated position
@@ -129,23 +172,23 @@ const ChessBoard: React.FC = () => {
                 sessionStorage.setItem('turn', 'black');
                 return updatedPieces;
             }
-            else if (blackPawn){ 
-                switch(piece) {
-                    case "queen": 
+            else if (blackPawn) {
+                switch (piece) {
+                    case "queen":
                         promotion = PieceType.QueenBlack
                         break;
-                    case "rook": 
+                    case "rook":
                         promotion = PieceType.RookBlack
                         break;
                     case "bishop":
                         promotion = PieceType.BishopBlack
-                        break; 
-                    case "knight": 
+                        break;
+                    case "knight":
                         promotion = PieceType.KnightBlack
                         break;
                     default:
                         return prevPieces;
-                }  
+                }
 
                 let updatedPieces = prevPieces.map(piece => {
                     if (piece.position.x === blackPawn.position.x && piece.position.y === blackPawn.position.y) {
@@ -153,24 +196,24 @@ const ChessBoard: React.FC = () => {
                     }
                     return piece;
                 });
-                
+
                 sessionStorage.setItem('turn', 'white');
                 return updatedPieces;
             }
-            
+
             return prevPieces;
         });
 
         setIsPromotionActive(false);
     };
 
-    function pawnPromotion(){
+    function pawnPromotion() {
         setIsPromotionActive(true);
     }
 
     //Handle drop of pieces
     const handleDrop = async (fromPosition: Position, toPosition: Position) => {
-        
+
         //On piece move checks for chess rules for legality of the move.
         setPieces((prevPieces) => {
 
@@ -231,13 +274,13 @@ const ChessBoard: React.FC = () => {
                     return prevPieces;
                 }
             }
-            else if (!pieceAtPosition && pieceFromPosition && enpassant && enpassant.length > 0 ) {
+            else if (!pieceAtPosition && pieceFromPosition && enpassant && enpassant.length > 0) {
                 const x: number = parseInt(enpassant[0]);
                 const y: number = parseInt(enpassant[1]);
                 console.log(x, y)
-                if (x === toPosition.x && (pieceFromPosition.type === PieceType.PawnBlack && y === toPosition.y - 1) || (pieceFromPosition.type === PieceType.PawnWhite && y === toPosition.y + 1))  {
+                if (x === toPosition.x && (pieceFromPosition.type === PieceType.PawnBlack && y === toPosition.y - 1) || (pieceFromPosition.type === PieceType.PawnWhite && y === toPosition.y + 1)) {
                     updatedPieces = updatedPieces.filter(obj => !(obj.position.x === x && obj.position.y === y));
-                }               
+                }
             }
 
             if (InCheck(pieceFromPosition.type, updatedPieces)) {
@@ -273,7 +316,7 @@ const ChessBoard: React.FC = () => {
         });
     };
 
- 
+
 
     //Render chess tile with/without piece
     const renderTile = (position: Position, postionName: string, color: 'white' | 'black') => {
@@ -298,7 +341,7 @@ const ChessBoard: React.FC = () => {
         }
         return tiles;
     };
- 
+
     return (
         <div className='chessboard'>
             {renderBoard()}
