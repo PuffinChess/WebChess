@@ -91,15 +91,6 @@ const ChessBoard: React.FC = () => {
         gameStart();
     }, []);
 
-    // function convertToChessPosition(position: Position): string {
-    //     const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    //     const x = position.x;
-    //     const y = 7 - position.y; // Invert y-coordinate to match chessboard orientation
-    //     const letter = letters[x];
-    //     const number = y + 1;
-
-    //     return `${letter}${number}`;
-    // }
     //Get move that the bot makes
     async function getBotMove() {
         //Call api
