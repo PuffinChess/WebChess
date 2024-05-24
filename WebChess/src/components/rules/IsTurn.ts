@@ -5,11 +5,14 @@ export function isTurn(pieceFromPosition: Piece): Boolean {
     let turn = sessionStorage.getItem("turn")
     let botColour = sessionStorage.getItem("botColour")
 
-    if (!isLowerCase(pieceFromPosition.type) && turn === "white" && botColour !== "white") {
+    if (!isLowerCase(pieceFromPosition.type) && turn === "white") {
         return true;
     }
-    else if (isLowerCase(pieceFromPosition.type) && turn === "black" && botColour !== "black"){
+    else if (isLowerCase(pieceFromPosition.type) && turn === "black"){
         return true;
     }
     return false;
 }
+
+// && botColour !== "white"
+//&& botColour !== "black"

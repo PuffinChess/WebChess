@@ -5,7 +5,7 @@ import { useState } from 'react';
 import DraggablePiece from '../pieces/DraggablePiece';
 import { PieceType } from '../pieces/PieceType';
 import { Piece } from '../pieces/Piece';
-import { redirect, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getPieceType } from '../pieces/GetPieceType';
 import { isPieceMovementLegal } from '../rules/Movement';
 import { InCheck } from '../rules/InCheck';
@@ -14,7 +14,7 @@ import { isTurn } from '../rules/IsTurn';
 import { performCastling } from '../rules/PerformCastling';
 import { castlingRightsUpdater } from '../rules/CastlingRightsUpdater';
 import PromotionSelection from './PromotionSelector';
-import { startNewGameUCI } from '../../api/UCI';
+import { getBestMove, startNewGameUCI } from '../../api/UCI';
 import { useNavigate } from 'react-router-dom';
 
 const ChessBoard: React.FC = () => {
@@ -41,7 +41,7 @@ const ChessBoard: React.FC = () => {
                 sessionStorage.setItem("turn", "white")
                 sessionStorage.setItem("castling", "KQkq")
                 sessionStorage.setItem("enpassant", "")
-                sessionStorage.setItem("moves", "startpos")
+                sessionStorage.setItem("moves", "position startpos ")
             }
 
             const fenBoardSplit = fenString.split(' ')[0];
@@ -79,7 +79,7 @@ const ChessBoard: React.FC = () => {
                 if (colour) {
                     sessionStorage.setItem("botColour", colour);
                     if (colour === "white") {
-                        //Tell the bot to play a move
+                        getBotMove();
                     }
                 }
             }
@@ -100,7 +100,45 @@ const ChessBoard: React.FC = () => {
 
     //     return `${letter}${number}`;
     // }
+    //Get move that the bot makes
+    async function getBotMove() {
+        //Call api
+        let moves = sessionStorage.getItem("moves")
 
+        if (moves !== null) {
+
+            var botMove: Promise<string | null> = getBestMove(moves)
+            
+            await botMove.then((value) => {
+                if ( value !== null ) {
+                    var positions : Position[] = convertToPosition(value.split(' ')[1]);
+    
+                    handleDrop(positions[0], positions[1])
+                }
+                else {
+                    alert("somthing went wrong")
+                }
+            })
+
+        }
+
+    }
+
+    function convertToPosition(move : string): Position[] {
+        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+        var moveFrom: string = move.slice(0,2);
+        var moveToo: string = move.slice(2,4);
+
+        var positionFrom: Position = {x: letters.findIndex(x => x === move[0]), y: (8 - Number(move[1]))}
+        var positionToo: Position = {x: letters.findIndex(x => x === move[2]), y: (8 - Number(move[3]))}
+        
+
+        var positions: Position[] = [positionFrom, positionToo]
+        console.log(positions)
+        return positions;
+    }
+ 
     //Switches between white turn and black turn
     function toggleTurn() {
         let botColour = sessionStorage.getItem("botColour");
@@ -117,7 +155,7 @@ const ChessBoard: React.FC = () => {
             //Checking if its the bots turn
             if ((botColour === currentPlayerColor) ||
                 (botColour === currentPlayerColor)) {
-                //Todo: API CALL HERE
+                getBotMove();
             }
         }
     }
@@ -210,6 +248,23 @@ const ChessBoard: React.FC = () => {
     function pawnPromotion() {
         setIsPromotionActive(true);
     }
+
+    function positionsToMove(fromPosition: Position, toPosition: Position): string {
+        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        
+        var move: string = `${letters[fromPosition.x]}${(8 - fromPosition.y)}${letters[toPosition.x]}${(8 - toPosition.y)} `
+        console.log(move)
+        return move;
+    }
+
+
+    // function convertToChessPosition(position: Position): string {
+    //     const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    //     const x = position.x;
+    //     const y = 7 - position.y; // Invert y-coordinate to match chessboard orientation
+    //     const letter = letters[x];
+    //     const number = y + 1;
+
 
     //Handle drop of pieces
     const handleDrop = async (fromPosition: Position, toPosition: Position) => {
@@ -308,8 +363,18 @@ const ChessBoard: React.FC = () => {
                 pawnPromotion();
             }
             else {
+                //convert to a move and store in the string
+                let moves= sessionStorage.getItem("moves");
+
+                if (moves) {
+                    moves = `${moves}${positionsToMove(fromPosition, toPosition)}`;
+                    sessionStorage.setItem("moves" , moves);
+                }
+
                 toggleTurn();
             }
+
+
 
             return updatedPieces;
         });
