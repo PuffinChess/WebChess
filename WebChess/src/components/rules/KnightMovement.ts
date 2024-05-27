@@ -1,7 +1,7 @@
 import { Position } from "../utils/Position";
-import { Piece } from "../pieces/Piece";
 
-export function isLegalKnightMovement(fromPosition: Position, toPosition: Position, prevPieces: Piece[]): boolean {
+
+export function isLegalKnightMovement(fromPosition: Position, toPosition: Position): boolean {
     const movementX = Math.abs(fromPosition.x - toPosition.x);
     const movementY = Math.abs(fromPosition.y - toPosition.y);
 
