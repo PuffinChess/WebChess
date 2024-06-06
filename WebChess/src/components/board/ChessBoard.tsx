@@ -35,7 +35,7 @@ const ChessBoard: React.FC = () => {
         gameReady = startNewGameUCI();
       }
 
-      if (!fenString) {
+      if( !fenString ){
         fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         sessionStorage.setItem("turn", "white");
         sessionStorage.setItem("castling", "KQkq");
@@ -461,23 +461,27 @@ const ChessBoard: React.FC = () => {
 
   const movesPlayed = () => {
     const moves = sessionStorage.getItem("moves")
-    const movesArray = moves?.split(' ');
-    return (
-        <>
-            {movesArray?.slice(2).map((move: string, index: number) => (
-                <p key={index}>{move}</p>
-            ))}
-        </>
-    );    
+    if(moves) {
+      const movesArray = moves?.split(' ');
+      return (
+          <>
+              {movesArray?.slice(2).map((move: string, index: number) => (
+                  <p key={index}>{move}</p>
+              ))}
+          </>
+      );    
+    }
   };
 
   const currentTurn = () => {
     const turn = sessionStorage.getItem("turn")
-    return (
-        <>
-        <p>Current Turn:{turn!.charAt(0).toUpperCase() + turn!.slice(1)}</p>
-        </>
-    )
+    if (turn){
+      return (
+          <>
+          <p>Current Turn:{turn!.charAt(0).toUpperCase() + turn!.slice(1)}</p>
+          </>
+      )
+    }
 };
 
   return (
