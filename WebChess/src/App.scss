@@ -3,16 +3,17 @@
   place-content: center;
   height: 100%;
   overflow: hidden;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
-@mixin tile{
+@mixin tile {
   display: flex;
   width: 10vh;
   height: 10vh;
 }
 
-@mixin piece-image{
-  img{
+@mixin piece-image {
+  img {
     margin: auto;
     width: 9vh;
     height: 9vh;
@@ -28,14 +29,14 @@
   height: 80vh;
 
   #black {
-    background-color: rgb(112,102,119);
+    background-color: rgb(112, 102, 119);
     color: white;
     @include tile();
     @include piece-image();
   }
 
   #white {
-    background-color: rgb(204,183,174);
+    background-color: rgb(204, 183, 174);
     color: black;
     @include tile();
     @include piece-image();
@@ -53,21 +54,23 @@
   justify-content: center;
   align-items: center;
   z-index: 100;
+  color: white;
   /* Ensure popup is on top of other elements */
 }
 
 .promotion-options {
   display: flex;
+  color: white;
   justify-content: space-around;
-  width: 200px;
-  margin: 0 auto;
-}
+  margin: 10px;
 
-.promotion-options button {
-  padding: 10px 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  cursor: pointer;
+  button {
+    padding: 5px 24px;
+    margin: 2px;
+    border: 1px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 }
 
 // App.scss
@@ -90,26 +93,26 @@
   }
 
   button {
-      background-color: #4CAF50;
-      border: none;
-      color: white;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 10px 2px;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
 
-      &:hover {
-          background-color: #45a049;
-      }
+    &:hover {
+      background-color: #45a049;
+    }
 
-      &:active {
-          background-color: #3e8e41;
-      }
+    &:active {
+      background-color: #3e8e41;
+    }
   }
 }
 
@@ -117,24 +120,24 @@
   display: flex;
   height: 100vh;
 
-  .playingfield{
+  .playingfield {
     padding: 20px;
 
     .turn {
       color: white;
-    text-align: center;
-    }  
+      text-align: center;
+    }
   }
 
   .moves {
     color: white;
-      width: 10%;
-      padding: 20px;
-      border-left: 1px solid #ccc;
+    width: 15%;
+    padding: 10px;
+    border-left: 1px solid #ccc;
 
-      h2 {
-          font-size: 1.5em;
-          margin-bottom: 10px;
-      }
+    h2 {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
   }
 }

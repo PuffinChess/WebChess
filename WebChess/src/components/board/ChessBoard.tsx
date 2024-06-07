@@ -173,16 +173,16 @@ const ChessBoard: React.FC = () => {
 
       if (whitePawn) {
         switch (piece) {
-          case "queen":
+          case "Queen":
             promotion = PieceType.QueenWhite;
             break;
-          case "rook":
+          case "Rook":
             promotion = PieceType.RookWhite;
             break;
-          case "bishop":
+          case "Bishop":
             promotion = PieceType.BishopWhite;
             break;
-          case "knight":
+          case "Knight":
             promotion = PieceType.KnightWhite;
             break;
           default:
@@ -203,16 +203,16 @@ const ChessBoard: React.FC = () => {
         return updatedPieces;
       } else if (blackPawn) {
         switch (piece) {
-          case "queen":
+          case "Queen":
             promotion = PieceType.QueenBlack;
             break;
-          case "rook":
+          case "Rook":
             promotion = PieceType.RookBlack;
             break;
-          case "bishop":
+          case "Bishop":
             promotion = PieceType.BishopBlack;
             break;
-          case "knight":
+          case "Knight":
             promotion = PieceType.KnightBlack;
             break;
           default:
@@ -478,7 +478,7 @@ const ChessBoard: React.FC = () => {
     if (turn){
       return (
           <>
-          <p>Current Turn:{turn!.charAt(0).toUpperCase() + turn!.slice(1)}</p>
+          <h2>Current Turn: {turn!.charAt(0).toUpperCase() + turn!.slice(1)}</h2>
           </>
       )
     }
@@ -500,7 +500,7 @@ const ChessBoard: React.FC = () => {
         </div>
         </div>
       <div className="moves">
-        <h1> Moves Played </h1>
+        <h2> Moves Played </h2>
         {movesPlayed()}
       </div>
     </div>
