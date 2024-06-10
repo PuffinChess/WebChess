@@ -9,6 +9,7 @@ function ChessBoard() {
             <Link to={"/chessboard/local"}><button>Local Game </button></Link>
             <Link to={"/chessboard/bot/black"}><button>White vs Bot </button></Link>
             <Link to={"/chessboard/bot/white"}><button>Black vs Bot</button></Link>
+            <Link to={"/chessboard/multiplayer"}><button>Onine vs Random Oponent</button></Link>
             <h4>*Pick a game type</h4>
         </div>
     )

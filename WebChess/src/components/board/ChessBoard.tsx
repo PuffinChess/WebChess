@@ -35,13 +35,13 @@ const ChessBoard: React.FC = () => {
         gameReady = startNewGameUCI();
       }
 
-      if( !fenString ){
+
         fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         sessionStorage.setItem("turn", "white");
         sessionStorage.setItem("castling", "KQkq");
         sessionStorage.setItem("enpassant", "");
         sessionStorage.setItem("moves", "position startpos ");
-      }
+      
 
       const fenBoardSplit = fenString.split(" ")[0];
       const fenBoard = fenBoardSplit.replace(/\//g, "");
@@ -173,16 +173,16 @@ const ChessBoard: React.FC = () => {
 
       if (whitePawn) {
         switch (piece) {
-          case "Queen":
+          case "queen":
             promotion = PieceType.QueenWhite;
             break;
-          case "Rook":
+          case "rook":
             promotion = PieceType.RookWhite;
             break;
-          case "Bishop":
+          case "bishop":
             promotion = PieceType.BishopWhite;
             break;
-          case "Knight":
+          case "knight":
             promotion = PieceType.KnightWhite;
             break;
           default:
@@ -203,16 +203,16 @@ const ChessBoard: React.FC = () => {
         return updatedPieces;
       } else if (blackPawn) {
         switch (piece) {
-          case "Queen":
+          case "queen":
             promotion = PieceType.QueenBlack;
             break;
-          case "Rook":
+          case "rook":
             promotion = PieceType.RookBlack;
             break;
-          case "Bishop":
+          case "bishop":
             promotion = PieceType.BishopBlack;
             break;
-          case "Knight":
+          case "knight":
             promotion = PieceType.KnightBlack;
             break;
           default:
@@ -461,27 +461,23 @@ const ChessBoard: React.FC = () => {
 
   const movesPlayed = () => {
     const moves = sessionStorage.getItem("moves")
-    if(moves) {
-      const movesArray = moves?.split(' ');
-      return (
-          <>
-              {movesArray?.slice(2).map((move: string, index: number) => (
-                  <p key={index}>{move}</p>
-              ))}
-          </>
-      );    
-    }
+    const movesArray = moves?.split(' ');
+    return (
+        <>
+            {movesArray?.slice(2).map((move: string, index: number) => (
+                <p key={index}>{move}</p>
+            ))}
+        </>
+    );    
   };
 
   const currentTurn = () => {
     const turn = sessionStorage.getItem("turn")
-    if (turn){
-      return (
-          <>
-          <h2>Current Turn: {turn!.charAt(0).toUpperCase() + turn!.slice(1)}</h2>
-          </>
-      )
-    }
+    return (
+        <>
+        <p>Current Turn:{turn!.charAt(0).toUpperCase() + turn!.slice(1)}</p>
+        </>
+    )
 };
 
   return (
@@ -500,7 +496,7 @@ const ChessBoard: React.FC = () => {
         </div>
         </div>
       <div className="moves">
-        <h2> Moves Played </h2>
+        <h1> Moves Played </h1>
         {movesPlayed()}
       </div>
     </div>

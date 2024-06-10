@@ -5,6 +5,7 @@ import ChessBoard from './components/board/ChessBoard';
 import { Position } from './components/utils/Position';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import Chat from './components/Chat'
 
 function App() {
   // Define the onDrop function
