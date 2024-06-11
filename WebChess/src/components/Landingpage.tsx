@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import "../App.scss"
 import { Link } from "react-router-dom";
 
@@ -10,7 +11,6 @@ function ChessBoard() {
             <Link to={"/chessboard/bot/black"}><button>White vs Bot </button></Link>
             <Link to={"/chessboard/bot/white"}><button>Black vs Bot</button></Link>
             <Link to={"/chessboard/multiplayer"}><button>Onine vs Random Oponent</button></Link>
-            <Link to={"/chat"}><button>TestCghat</button></Link>
             <h4>*Pick a game type</h4>
         </div>
     )

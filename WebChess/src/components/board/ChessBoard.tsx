@@ -31,6 +31,7 @@ const ChessBoard: React.FC = () => {
   const [isConnectionReady, setIsConnectionReady] = useState(false);
 
   useEffect(() => {
+
     const pieces: Piece[] = [];
     let fenString = params.fen;
     let gameType = params.type;
@@ -543,14 +544,25 @@ const ChessBoard: React.FC = () => {
 
   const currentTurn = () => {
     const turn = sessionStorage.getItem("turn");
+    const botGame = sessionStorage.getItem("botColour");
+    const multiGame = sessionStorage.getItem("multiColour");
     if (turn) {
       return (
         <>
-          <p>Current Turn:{turn!.charAt(0).toUpperCase() + turn!.slice(1)}</p>
+          {botGame && botGame !== turn && <h2>Your turn, {turn} to play</h2>}
+          {botGame && botGame === turn && <h2>Bot is currently thinking...</h2>}
+          {multiGame && multiGame === turn && <h2>Your turn, {multiGame} to move.</h2>}
+          {multiGame && multiGame !== turn && <h2>Oponents turn.</h2>}
+          {!multiGame && !botGame && <h2>Current Turn: {turn!.charAt(0).toUpperCase() + turn!.slice(1)}</h2>}
         </>
       );
     }
   };
+
+  function abortGame() {
+    sessionStorage.clear()
+    navigate('/')
+  }
 
   return (
     <div className="game-screen">
@@ -565,6 +577,7 @@ const ChessBoard: React.FC = () => {
       </div>
       <div className="moves">
         <h1> Moves Played </h1>
+        <button onClick={abortGame}>Abort Game</button>
         {movesPlayed()}
       </div>
     </div>
