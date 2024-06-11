@@ -6,5 +6,5 @@ export interface ChessTileProps {
     positionName: String;
     color: 'white' | 'black';
     children: ReactNode;
-    onDrop: (fromPosition: Position, toPosition: Position) => void;
+    onDrop: (fromPosition: Position, toPosition: Position, botMove: false) => void;
 }

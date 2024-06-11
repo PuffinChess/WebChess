@@ -23,6 +23,7 @@ function App() {
             <Route path="/chessboard/:type" element={<ChessBoard />} />
             <Route path="/chessboard/:type/:colour" element={<ChessBoard />} />
             <Route path="/chessboard/:type/:colour/:fen" element={<ChessBoard />} />
+            <Route path="/chat" element={<Chat />} />
           </Routes>
         </Router>
       </DndProvider>

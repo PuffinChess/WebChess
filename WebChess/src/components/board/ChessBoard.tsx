@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import ChessTile from "./DroppableSquare";
 import { Position } from "../utils/Position";
 import { useState } from "react";
@@ -16,12 +16,19 @@ import { castlingRightsUpdater } from "../rules/CastlingRightsUpdater";
 import PromotionSelection from "./PromotionSelector";
 import { getBestMove, startNewGameUCI } from "../../api/UCI";
 import { useNavigate } from "react-router-dom";
+import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 
 const ChessBoard: React.FC = () => {
   const navigate = useNavigate();
   const [pieces, setPieces] = useState<Piece[]>([]);
   const params = useParams();
   const [isPromotionActive, setIsPromotionActive] = useState(false);
+
+  //multiplayer
+  const connectionRef = useRef<HubConnection | null>(null);
+  const userRef = useRef<string| null>(null);
+  const [messageReccieved, setMessageReccieved] = useState([]);
+  const [isConnectionReady, setIsConnectionReady] = useState(false);
 
   useEffect(() => {
     const pieces: Piece[] = [];
@@ -33,15 +40,16 @@ const ChessBoard: React.FC = () => {
     async function gameStart() {
       if (gameType === "bot") {
         gameReady = startNewGameUCI();
+      } else if (gameType === "multiplayer") {
+        //Establish web socket
+        multiplayer();
       }
 
-
-        fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        sessionStorage.setItem("turn", "white");
-        sessionStorage.setItem("castling", "KQkq");
-        sessionStorage.setItem("enpassant", "");
-        sessionStorage.setItem("moves", "position startpos ");
-      
+      fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      sessionStorage.setItem("turn", "white");
+      sessionStorage.setItem("castling", "KQkq");
+      sessionStorage.setItem("enpassant", "");
+      sessionStorage.setItem("moves", "position startpos ");
 
       const fenBoardSplit = fenString.split(" ")[0];
       const fenBoard = fenBoardSplit.replace(/\//g, "");
@@ -87,6 +95,64 @@ const ChessBoard: React.FC = () => {
     gameStart();
   }, []);
 
+  useEffect(() => {
+    var positions: Position[] = convertToPosition(messageReccieved);
+    console.log(messageReccieved);
+    if (messageReccieved !== "white" && messageReccieved !== "black") {
+      handleDrop(positions[0], positions[1], true);
+    } else {
+      sessionStorage.setItem("multiColour", messageReccieved);
+    }
+  }, [messageReccieved]);
+
+  function multiplayer() {
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("http://localhost:5247/gameHub")
+      .build();
+
+    newConnection
+      .start()
+      .then(() => {
+        console.log("Connected to SignalR hub");
+        connectionRef.current = newConnection;
+        setIsConnectionReady(true);
+      })
+      .catch((err) => console.error("Error connecting to hub:", err));
+    newConnection.on("Paired", (user) => {
+      userRef.current = user;
+    });
+
+    newConnection.on("ReceiveMessage", (senderId, message) => {
+      setMessageReccieved(message);
+      console.log("Received message:", message);
+    });
+
+    newConnection.on("PairedUserDisconnected", () => {
+      userRef.current = null;
+      console.log("Paired userd disconnected");
+    });
+
+    return () => {
+      newConnection.stop().then(() => console.log("Connection stopped"));
+    };
+  }
+
+  async function sendMove() {
+    let moves = sessionStorage.getItem("moves");
+    if (moves) {
+      let movesArray = moves.split(" ");
+      let move = movesArray[movesArray.length - 2];
+      console.log(move);
+      console.log(connectionRef.current)
+      console.log(userRef.current)
+      await connectionRef.current.send("SendMessage", userRef.current, move)
+    }
+  }
+
+  async function sendMoveForReal(connection: HubConnection, move: string) {
+    await connection.send("SendMessage", pairedUser, move)
+  }
+
   //Get move that the bot makes
   async function getBotMove() {
     //Call api
@@ -99,7 +165,7 @@ const ChessBoard: React.FC = () => {
         if (value !== null) {
           var positions: Position[] = convertToPosition(value.split(" ")[1]);
 
-          handleDrop(positions[0], positions[1]);
+          handleDrop(positions[0], positions[1], true);
         } else {
           alert("somthing went wrong");
         }
@@ -123,13 +189,13 @@ const ChessBoard: React.FC = () => {
     };
 
     var positions: Position[] = [positionFrom, positionToo];
-    console.log(positions);
     return positions;
   }
 
   //Switches between white turn and black turn
   function toggleTurn() {
     let botColour = sessionStorage.getItem("botColour");
+    let multiplayerColour = sessionStorage.getItem("multiColour");
     let currentPlayerColor = sessionStorage.getItem("turn");
     if (currentPlayerColor === "white") {
       currentPlayerColor = "black";
@@ -141,11 +207,12 @@ const ChessBoard: React.FC = () => {
 
     if (botColour) {
       //Checking if its the bots turn
-      if (
-        botColour === currentPlayerColor ||
-        botColour === currentPlayerColor
-      ) {
+      if (botColour === currentPlayerColor) {
         getBotMove();
+      }
+    } else if (multiplayerColour) {
+      if (multiplayerColour !== currentPlayerColor) {
+        sendMove();
       }
     }
   }
@@ -252,7 +319,6 @@ const ChessBoard: React.FC = () => {
     var move: string = `${letters[fromPosition.x]}${8 - fromPosition.y}${
       letters[toPosition.x]
     }${8 - toPosition.y} `;
-    console.log(move);
     return move;
   }
 
@@ -264,7 +330,11 @@ const ChessBoard: React.FC = () => {
   //     const number = y + 1;
 
   //Handle drop of pieces
-  const handleDrop = async (fromPosition: Position, toPosition: Position) => {
+  const handleDrop = async (
+    fromPosition: Position,
+    toPosition: Position,
+    botMove: boolean
+  ) => {
     //On piece move checks for chess rules for legality of the move.
     setPieces((prevPieces) => {
       //Verify that the move is a move not a drop back at the same spot.
@@ -284,7 +354,7 @@ const ChessBoard: React.FC = () => {
       }
 
       //Check if it is the turn of the piece colour moved
-      if (!isTurn(pieceFromPosition)) {
+      if (!isTurn(pieceFromPosition, botMove)) {
         return prevPieces;
       }
 
@@ -460,41 +530,39 @@ const ChessBoard: React.FC = () => {
   };
 
   const movesPlayed = () => {
-    const moves = sessionStorage.getItem("moves")
-    const movesArray = moves?.split(' ');
+    const moves = sessionStorage.getItem("moves");
+    const movesArray = moves?.split(" ");
     return (
-        <>
-            {movesArray?.slice(2).map((move: string, index: number) => (
-                <p key={index}>{move}</p>
-            ))}
-        </>
-    );    
+      <>
+        {movesArray?.slice(2).map((move: string, index: number) => (
+          <p key={index}>{move}</p>
+        ))}
+      </>
+    );
   };
 
   const currentTurn = () => {
-    const turn = sessionStorage.getItem("turn")
-    return (
+    const turn = sessionStorage.getItem("turn");
+    if (turn) {
+      return (
         <>
-        <p>Current Turn:{turn!.charAt(0).toUpperCase() + turn!.slice(1)}</p>
+          <p>Current Turn:{turn!.charAt(0).toUpperCase() + turn!.slice(1)}</p>
         </>
-    )
-};
+      );
+    }
+  };
 
   return (
     <div className="game-screen">
-        <div className="playingfield">
-      <div className="chessboard">
-        {renderBoard()}
-        {isPromotionActive && (
-          <PromotionSelection onSelectPiece={handlePawnPromotion} />
-        )}
+      <div className="playingfield">
+        <div className="chessboard">
+          {renderBoard()}
+          {isPromotionActive && (
+            <PromotionSelection onSelectPiece={handlePawnPromotion} />
+          )}
+        </div>
+        <div className="turn">{currentTurn()}</div>
       </div>
-      <div className="turn">
-        {
-            currentTurn()
-        }
-        </div>
-        </div>
       <div className="moves">
         <h1> Moves Played </h1>
         {movesPlayed()}

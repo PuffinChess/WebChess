@@ -55,7 +55,7 @@ function Chat() {
           <div>
             {messages.map((msg, index) => (
               <div key={index}>
-                {msg.message}
+                <b>{msg.senderId}:</b> {msg.message}
               </div>
             ))}
           </div>
