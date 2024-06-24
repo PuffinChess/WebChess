@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import "../App.scss"
 import { Link } from "react-router-dom";
 
@@ -6,7 +5,7 @@ function ChessBoard() {
 
     return (
         <div className='landingpage'>
-            <h1>♘ React Chess ♘</h1>
+            <h1>♘ My - Chess ♘</h1>
             <Link to={"/chessboard/local"}><button>Local Game </button></Link>
             <Link to={"/chessboard/bot/black"}><button>White vs Bot </button></Link>
             <Link to={"/chessboard/bot/white"}><button>Black vs Bot</button></Link>

@@ -1,9 +1,3 @@
-const url = "https://localhost:5165/api/Chess";
-
-interface TextResponse {
-  text: string;
-}
-
 export async function startNewGameUCI(): Promise<boolean> {
   try {
     const responseUci = await fetch("http://localhost:5247/api/UCI/", {

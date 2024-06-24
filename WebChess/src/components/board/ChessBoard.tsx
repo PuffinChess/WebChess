@@ -27,8 +27,11 @@ const ChessBoard: React.FC = () => {
   //multiplayer
   const connectionRef = useRef<HubConnection | null>(null);
   const userRef = useRef<string| null>(null);
-  const [messageReccieved, setMessageReccieved] = useState([]);
-  const [isConnectionReady, setIsConnectionReady] = useState(false);
+  const [messageReccieved, setMessageReccieved] = useState("");
+  const [localGame, setlocalGame] = useState(true);
+  const [connected, setConnected] = useState(false);
+  const [botGameType, setBotGameType] = useState(false)
+  const [multiColour, setMultiColour] = useState("");
 
   useEffect(() => {
 
@@ -40,9 +43,12 @@ const ChessBoard: React.FC = () => {
 
     async function gameStart() {
       if (gameType === "bot") {
+        setlocalGame(false)
+        setBotGameType(true)
         gameReady = startNewGameUCI();
       } else if (gameType === "multiplayer") {
         //Establish web socket
+        setlocalGame(false)
         multiplayer();
       }
 
@@ -98,11 +104,11 @@ const ChessBoard: React.FC = () => {
 
   useEffect(() => {
     var positions: Position[] = convertToPosition(messageReccieved);
-    console.log(messageReccieved);
     if (messageReccieved !== "white" && messageReccieved !== "black") {
       handleDrop(positions[0], positions[1], true);
     } else {
       sessionStorage.setItem("multiColour", messageReccieved);
+      setMultiColour(messageReccieved);
     }
   }, [messageReccieved]);
 
@@ -114,27 +120,29 @@ const ChessBoard: React.FC = () => {
     newConnection
       .start()
       .then(() => {
-        console.log("Connected to SignalR hub");
         connectionRef.current = newConnection;
-        setIsConnectionReady(true);
       })
-      .catch((err) => console.error("Error connecting to hub:", err));
+      .catch(() => {
+        alert("Failed to connect")
+        navigate('/')
+      });
     newConnection.on("Paired", (user) => {
       userRef.current = user;
+      setConnected(true);
     });
 
-    newConnection.on("ReceiveMessage", (senderId, message) => {
-      setMessageReccieved(message);
-      console.log("Received message:", message);
+    newConnection.on("ReceiveMessage", (userId, message) => {
+      if(userId) {
+        setMessageReccieved(message);
+      }
     });
 
     newConnection.on("PairedUserDisconnected", () => {
       userRef.current = null;
-      console.log("Paired userd disconnected");
     });
 
     return () => {
-      newConnection.stop().then(() => console.log("Connection stopped"));
+      newConnection.stop().then(() => alert("Connection Connected"));
     };
   }
 
@@ -143,15 +151,8 @@ const ChessBoard: React.FC = () => {
     if (moves) {
       let movesArray = moves.split(" ");
       let move = movesArray[movesArray.length - 2];
-      console.log(move);
-      console.log(connectionRef.current)
-      console.log(userRef.current)
-      await connectionRef.current.send("SendMessage", userRef.current, move)
+      await connectionRef.current!.send("SendMessage", userRef.current, move)
     }
-  }
-
-  async function sendMoveForReal(connection: HubConnection, move: string) {
-    await connection.send("SendMessage", pairedUser, move)
   }
 
   //Get move that the bot makes
@@ -176,9 +177,6 @@ const ChessBoard: React.FC = () => {
 
   function convertToPosition(move: string): Position[] {
     const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
-
-    var moveFrom: string = move.slice(0, 2);
-    var moveToo: string = move.slice(2, 4);
 
     var positionFrom: Position = {
       x: letters.findIndex((x) => x === move[0]),
@@ -254,7 +252,6 @@ const ChessBoard: React.FC = () => {
             promotion = PieceType.KnightWhite;
             break;
           default:
-            console.log("didntwork");
             return prevPieces;
         }
         let updatedPieces = prevPieces.map((piece) => {
@@ -336,6 +333,15 @@ const ChessBoard: React.FC = () => {
     toPosition: Position,
     botMove: boolean
   ) => {
+    // let localColour = sessionStorage.getItem("multiColour");
+    // console.log(fromPosition, toPosition, botMove, localColour)
+
+    // if (localColour === "black" && !botMove) {
+    //   fromPosition.y = 7 - fromPosition.y
+    //   toPosition.y = 7 - toPosition.y
+    // }
+
+    // console.log(fromPosition, toPosition, botMove)
     //On piece move checks for chess rules for legality of the move.
     setPieces((prevPieces) => {
       //Verify that the move is a move not a drop back at the same spot.
@@ -519,6 +525,19 @@ const ChessBoard: React.FC = () => {
   //Render chess board
   const renderBoard = () => {
     const tiles = [];
+    // if (multiColour === "black") {
+    //   for (let y = 0; y < 8; y++) {
+    //     for (let x = 0; x < 8; x++) {
+    //       // Calculate the flipped row index
+    //       const flippedY = 7 - y;
+    //       const position = { x, y: flippedY };
+    //       const positionName = String.fromCharCode(97 + x) + (flippedY + 1).toString();
+    //       const color = (flippedY + x) % 2 !== 0 ? "black" : "white";
+    //       tiles.push(renderTile(position, positionName, color));
+    //     }
+    //   }
+    //   return tiles;
+    //}
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         const position = { x, y };
@@ -529,14 +548,18 @@ const ChessBoard: React.FC = () => {
     }
     return tiles;
   };
+  
 
   const movesPlayed = () => {
     const moves = sessionStorage.getItem("moves");
     const movesArray = moves?.split(" ");
+    movesArray?.pop()
     return (
       <>
+      <p className="moveColumn">White</p>
+      <p className="moveColumn">Black</p>
         {movesArray?.slice(2).map((move: string, index: number) => (
-          <p key={index}>{move}</p>
+          <p className="moveColumn" key={index}>{move}</p>
         ))}
       </>
     );
@@ -549,11 +572,12 @@ const ChessBoard: React.FC = () => {
     if (turn) {
       return (
         <>
-          {botGame && botGame !== turn && <h2>Your turn, {turn} to play</h2>}
-          {botGame && botGame === turn && <h2>Bot is currently thinking...</h2>}
-          {multiGame && multiGame === turn && <h2>Your turn, {multiGame} to move.</h2>}
-          {multiGame && multiGame !== turn && <h2>Oponents turn.</h2>}
-          {!multiGame && !botGame && <h2>Current Turn: {turn!.charAt(0).toUpperCase() + turn!.slice(1)}</h2>}
+          {botGame && botGame !== turn && botGameType && <h2>Your turn, {turn} to play</h2>}
+          {botGame && botGame === turn && botGameType && <h2>Bot is currently thinking...</h2>}
+          {!connected && !localGame && !botGameType && <h2>Waiting to connect you to an oponent.</h2>}
+          {connected && multiColour === turn && !botGameType && <h2>Your turn, {multiGame} to move.</h2>}
+          {connected && multiColour !== turn && !botGameType && <h2>Oponents turn.</h2>}
+          {localGame && <h2>Current Turn: {turn!.charAt(0).toUpperCase() + turn!.slice(1)}</h2>}
         </>
       );
     }
@@ -578,7 +602,7 @@ const ChessBoard: React.FC = () => {
       <div className="moves">
         <h1> Moves Played </h1>
         <button onClick={abortGame}>Abort Game</button>
-        {movesPlayed()}
+        <div className="move-container">  {movesPlayed()}</div>
       </div>
     </div>
   );

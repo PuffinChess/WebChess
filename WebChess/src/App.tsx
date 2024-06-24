@@ -2,17 +2,10 @@ import './App.scss'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landingpage from './components/Landingpage'
 import ChessBoard from './components/board/ChessBoard';
-import { Position } from './components/utils/Position';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import Chat from './components/Chat'
 
 function App() {
-  // Define the onDrop function
-  const onDrop = (fromPosition: Position, toPosition: Position) => {
-    console.log(`Moved from ${fromPosition} to ${toPosition}`);
-    // Here you would update the state of your chessboard to reflect the move
-  };
 
   return (
     <div className='app'>
@@ -23,7 +16,6 @@ function App() {
             <Route path="/chessboard/:type" element={<ChessBoard />} />
             <Route path="/chessboard/:type/:colour" element={<ChessBoard />} />
             <Route path="/chessboard/:type/:colour/:fen" element={<ChessBoard />} />
-            <Route path="/chat" element={<Chat />} />
           </Routes>
         </Router>
       </DndProvider>
